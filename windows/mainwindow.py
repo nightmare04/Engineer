@@ -59,7 +59,6 @@ class MainWindow(QtWidgets.QMainWindow):
     def exec_lc(lc_id):
         exlcw = ExecLC(lc_id)
         exlcw.exec()
-        self.fill_lk()
 
     def load_lc(self, lc_id):
         lcw = EditLC(lc_id)

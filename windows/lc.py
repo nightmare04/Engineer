@@ -1,3 +1,5 @@
+import datetime
+
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
 
@@ -18,15 +20,29 @@ class BaseLC:
             for spec_str in specs:
                 spec = Spec.get(Spec.name == spec_str)
                 btn_spec = SpecBtn(spec.name)
+                vypolnen = ListControlExec.get_or_none(
+                    id_lk=lc.id,
+                    plane=plane.id,
+                    spec=spec.id
+                )
+                if vypolnen is None:
+                    btn_spec.setChecked(False)
+                else:
+                    btn_spec.setChecked(True)
+
                 btn_spec.clicked.connect(lambda: self.exec_spec(lc, plane, spec))
                 spec_lout.addWidget(btn_spec)
 
     @staticmethod
     def exec_spec(lc: ListControl, plane: Plane, spec: Spec):
-        res = ListControlExec.select().where(
-            (ListControlExec.id_lk == lc.id) &
-            (ListControlExec.plane == plane.id))
-        print(res)
+        res = ListControlExec.get_or_create(
+            id_lk=lc.id,
+            plane=plane.id,
+            spec=spec.id,
+            defaults={'date': datetime.date.today()}
+        )
+        if not res[1]:
+            res[0].delete_instance()
 
     @staticmethod
     def unit_fill_new(gb):
@@ -116,7 +132,6 @@ class ExecLC(QDialog, BaseLC):
     def open_exec_spec(self, plane, lc_id):
         spec_window = ExecSpec(plane, lc_id)
         spec_window.exec()
-        self.unit_fill(self.ui.podr_groupbox, lc_id)
 
 
 class ExecSpec(QDialog, BaseLC):
@@ -127,5 +142,5 @@ class ExecSpec(QDialog, BaseLC):
         self.setWindowTitle('Отметь выполненные специальности')
         self.globalLayout = QHBoxLayout(self)
         self.setLayout(self.globalLayout)
-        self.spec_fill(self.globalLayout, self.lc)
+        self.spec_fill(self.globalLayout, self.lc, plane)
 

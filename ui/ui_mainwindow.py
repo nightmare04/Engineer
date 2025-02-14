@@ -11,7 +11,7 @@ from PyQt6 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
-        # MainWindow.setObjectName("MainWindow")
+        MainWindow.setObjectName("MainWindow")
         MainWindow.resize(800, 600)
         self.centralwidget = QtWidgets.QWidget(parent=MainWindow)
         self.centralwidget.setObjectName("centralwidget")
@@ -71,15 +71,30 @@ class Ui_MainWindow(object):
         self.horizontalLayout.setStretch(2, 4)
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(parent=MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 22))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 800, 24))
         self.menubar.setObjectName("menubar")
+        self.menu = QtWidgets.QMenu(parent=self.menubar)
+        self.menu.setObjectName("menu")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(parent=MainWindow)
         self.statusbar.setObjectName("statusbar")
         MainWindow.setStatusBar(self.statusbar)
+        self.type_plane_action = QtGui.QAction(parent=MainWindow)
+        self.type_plane_action.setObjectName("type_plane_action")
+        self.planes_action = QtGui.QAction(parent=MainWindow)
+        self.planes_action.setObjectName("planes_action")
+        self.spec_action = QtGui.QAction(parent=MainWindow)
+        self.spec_action.setObjectName("spec_action")
+        self.units_action = QtGui.QAction(parent=MainWindow)
+        self.units_action.setObjectName("units_action")
+        self.menu.addAction(self.type_plane_action)
+        self.menu.addAction(self.planes_action)
+        self.menu.addAction(self.spec_action)
+        self.menu.addAction(self.units_action)
+        self.menubar.addAction(self.menu.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -90,4 +105,8 @@ class Ui_MainWindow(object):
         self.btn_ispr.setText(_translate("MainWindow", "Исправность"))
         self.btn_rekl.setText(_translate("MainWindow", "Рекламации"))
         self.btn_add_lk.setText(_translate("MainWindow", "Добавить"))
-
+        self.menu.setTitle(_translate("MainWindow", "Настройки"))
+        self.type_plane_action.setText(_translate("MainWindow", "Типы самолетов"))
+        self.planes_action.setText(_translate("MainWindow", "Самолеты"))
+        self.spec_action.setText(_translate("MainWindow", "Специальности"))
+        self.units_action.setText(_translate("MainWindow", "Подразделения"))

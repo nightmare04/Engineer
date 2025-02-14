@@ -73,7 +73,7 @@
     <item>
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="pki_page"/>
       <widget class="QWidget" name="lk_page">
@@ -106,11 +106,41 @@
      <x>0</x>
      <y>0</y>
      <width>800</width>
-     <height>22</height>
+     <height>24</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Настройки</string>
+    </property>
+    <addaction name="type_plane_action"/>
+    <addaction name="planes_action"/>
+    <addaction name="spec_action"/>
+    <addaction name="units_action"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="type_plane_action">
+   <property name="text">
+    <string>Типы самолетов</string>
+   </property>
+  </action>
+  <action name="planes_action">
+   <property name="text">
+    <string>Самолеты</string>
+   </property>
+  </action>
+  <action name="spec_action">
+   <property name="text">
+    <string>Специальности</string>
+   </property>
+  </action>
+  <action name="units_action">
+   <property name="text">
+    <string>Подразделения</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

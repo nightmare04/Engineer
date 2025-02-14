@@ -7,17 +7,26 @@ from custom_widgets import *
 
 
 class BaseLC:
-    @staticmethod
-    def spec_fill(spec_lout, lc: ListControl = None):
-        if lc is None:
+    def spec_fill(self, spec_lout, lc: ListControl = None, plane: Plane = None):
+        if lc and plane is None:
             specs = Spec.select(Spec.name).tuples()
+            for spec in specs:
+                btn_spec = SpecBtn(spec)
+                spec_lout.addWidget(btn_spec)
         else:
             specs = lc.spec_for_exec
-        for spec in specs:
-            btn_spec = SpecBtn(spec)
-            spec_lout.addWidget(btn_spec)
+            for spec_str in specs:
+                spec = Spec.get(Spec.name == spec_str)
+                btn_spec = SpecBtn(spec.name)
+                btn_spec.clicked.connect(lambda: self.exec_spec(lc, plane, spec))
+                spec_lout.addWidget(btn_spec)
 
-
+    @staticmethod
+    def exec_spec(lc: ListControl, plane: Plane, spec: Spec):
+        res = ListControlExec.select().where(
+            (ListControlExec.id_lk == lc.id) &
+            (ListControlExec.plane == plane.id))
+        print(res)
 
     @staticmethod
     def unit_fill_new(gb):
@@ -84,7 +93,7 @@ class EditLC(AddLC):
 
     def fill_form(self):
         self.spec_fill(self.spec_lout)
-        self.unit_fill(lc_id, self.ui.podr_groupbox, True)
+        self.unit_fill(lc_id, self.ui.podr_groupbox)
 
 
 class ExecLC(QDialog, BaseLC):
@@ -107,6 +116,7 @@ class ExecLC(QDialog, BaseLC):
     def open_exec_spec(self, plane, lc_id):
         spec_window = ExecSpec(plane, lc_id)
         spec_window.exec()
+        self.unit_fill(self.ui.podr_groupbox, lc_id)
 
 
 class ExecSpec(QDialog, BaseLC):

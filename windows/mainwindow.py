@@ -1,4 +1,6 @@
-from PyQt6 import QtWidgets
+import datetime
+
+from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtGui import QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QGroupBox
 
@@ -16,19 +18,28 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.setWindowTitle("ИАС")
+        self.ui.stackedWidget.setCurrentWidget(self.ui.lk_page)
         self.fill_lk()
         self.ui.btn_add_lk.clicked.connect(self.add_lc_window)
+        self.ui.btn_pki.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.pki_page))
+        self.ui.btn_lk.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.lk_page))
+        self.ui.btn_ispr.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.ispr_page))
+        self.ui.btn_rekl.clicked.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.rekl_page))
+        self.ui.type_plane_action.triggered.connect(lambda: self.ui.stackedWidget.setCurrentWidget(self.ui.rekl_page))
 
     def fill_lk(self):
         model = QStandardItemModel(self)
-        model.setHorizontalHeaderLabels(["","№ ЛК","ТЛГ", "Дата ТЛГ", "Срок до", "Описание", "Выполнено"])
+        model.setHorizontalHeaderLabels(["", "№ ЛК", "ТЛГ", "Дата ТЛГ", "Срок до", "Описание", "Выполнено"])
         lcs = ListControl.select()
         for lc in lcs:
             id_lc = QStandardItem(str(lc.id))
-            tlg = QStandardItem(lc.tlg)
+            tlg = QStandardItem(str(lc.tlg))
             numlc = QStandardItem(str(lc.lc_number))
             tlg_date = QStandardItem(str(lc.tlg_date))
-            tlg_deadline = QStandardItem(str(lc.tlg_deadline))
+            deadline = lc.tlg_deadline - datetime.date.today()
+            tlg_deadline = QStandardItem(self.delta_to_text(deadline),)
+            if deadline.days < 0:
+                tlg_deadline.setBackground(QtGui.QColor('red'))
             tlg_desc = QStandardItem(lc.description)
             tlg_desc.setEditable(False)
             tlg_cf = QStandardItem(lc.complete_flag)
@@ -38,19 +49,29 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableView.clicked.connect(lambda index: self.exec_lc(index.siblingAtColumn(0).data()))
 
     @staticmethod
+    def delta_to_text(timedelta: datetime.timedelta) -> str:
+        if timedelta.days < 0:
+            return "Просрочен на :" + str(timedelta.days) + " дней"
+        else:
+            return "Осталось " + str(timedelta.days) + " дней"
+
+    @staticmethod
     def exec_lc(lc_id):
         exlcw = ExecLC(lc_id)
         exlcw.exec()
+        self.fill_lk()
 
     def load_lc(self, lc_id):
         lcw = EditLC(lc_id)
         if lcw.exec():
             self.save_lc(lcw, lcw.lc)
+        self.fill_lk()
 
     def add_lc_window(self):
         lcw = AddLC()
         if lcw.exec():
             self.add_lc(lcw)
+        self.fill_lk()
 
     def add_lc(self, dialog):
         lc = ListControl()

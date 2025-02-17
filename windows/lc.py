@@ -1,4 +1,5 @@
 import datetime
+from functools import partial
 
 from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
@@ -8,48 +9,31 @@ from database import *
 from custom_widgets import *
 
 
-class BaseLC:
-    def spec_fill(self, spec_lout, lc: ListControl = None, plane: Plane = None):
-        if lc and plane is None:
-            specs = Spec.select(Spec.name).tuples()
-            for spec in specs:
-                btn_spec = SpecBtn(spec)
-                spec_lout.addWidget(btn_spec)
-        else:
-            specs = lc.spec_for_exec
-            for spec_str in specs:
-                spec = Spec.get(Spec.name == spec_str)
-                btn_spec = SpecBtn(spec.name)
-                vypolnen = ListControlExec.get_or_none(
-                    id_lk=lc.id,
-                    plane=plane.id,
-                    spec=spec.id
-                )
-                if vypolnen is None:
-                    btn_spec.setChecked(False)
-                else:
-                    btn_spec.setChecked(True)
+class AddLC(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.ui = Ui_D_add_lk()
+        self.ui.setupUi(self)
+        self.setWindowTitle("Добавить Лист контроля")
+        self.ui.btn_ok.clicked.connect(self.accept)
+        self.ui.btn_cancel.clicked.connect(self.reject)
+        self.fill_form()
 
-                btn_spec.clicked.connect(lambda: self.exec_spec(lc, plane, spec))
-                spec_lout.addWidget(btn_spec)
+    def fill_form(self):
+        self.spec_fill()
+        self.unit_fill()
 
-    @staticmethod
-    def exec_spec(lc: ListControl, plane: Plane, spec: Spec):
-        res = ListControlExec.get_or_create(
-            id_lk=lc.id,
-            plane=plane.id,
-            spec=spec.id,
-            defaults={'date': datetime.date.today()}
-        )
-        if not res[1]:
-            res[0].delete_instance()
+    def spec_fill(self):
+        specs = Spec.select()
+        for spec in specs:
+            btn_spec = SpecBtn(spec)
+            self.ui.spec_layout.addWidget(btn_spec)
 
-    @staticmethod
-    def unit_fill_new(gb):
+    def unit_fill(self):
         for unit in Unit.select():
             i = 0
             j = 0
-            unit_groupbox = PlaneGroupBox(unit, True, gb)
+            unit_groupbox = PlaneGroupBox(unit, True, self.ui.podr_groupbox)
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
             for plane in Plane.select().join(Unit).where(Plane.unit == unit.id):
@@ -60,59 +44,32 @@ class BaseLC:
                 if i > 2:
                     j += 1
                     i = 0
-            gb.layout().addWidget(unit_groupbox)
-
-    @staticmethod
-    def unit_fill(lc_id, gb):
-        lc = ListControl.get_by_id(lc_id)
-        for unit in lc.planes_for_exec.keys():
-            i, j = 0, 0
-            unit_groupbox = PlaneGroupBox(Unit.get(Unit.name == unit))
-            unit_lout = QGridLayout()
-            unit_groupbox.setLayout(unit_lout)
-            planes = lc.planes_for_exec[unit]
-            for plane in planes:
-                i += 1
-                btn_plane = PlaneBtn(plane)
-                btn_plane.setChecked(True)
-                unit_lout.addWidget(btn_plane, j, i)
-                if i > 2:
-                    j += 1
-                    i = 0
-            gb.layout().addWidget(unit_groupbox)
+            self.ui.unit_layout.addWidget(unit_groupbox)
 
 
-class AddLC(QDialog, BaseLC):
-    def __init__(self, parent=None):
+class EditLC(QDialog):
+    def __init__(self, lc: ListControl, parent=None):
+        self.lc = lc
         super().__init__(parent)
         self.ui = Ui_D_add_lk()
         self.ui.setupUi(self)
-        self.setWindowTitle("Добавить Лист контроля")
-        self.spec_lout = QHBoxLayout()
-        self.ui.spec_groupbox.setLayout(self.spec_lout)
-        self.unit_lout = QHBoxLayout()
-        self.ui.podr_groupbox.setLayout(self.unit_lout)
+        self.setWindowTitle("Изменить Лист контроля")
         self.ui.btn_ok.clicked.connect(self.accept)
         self.ui.btn_cancel.clicked.connect(self.reject)
         self.fill_form()
 
     def fill_form(self):
-        self.spec_fill(self.spec_lout)
-        self.unit_fill_new(self.ui.podr_groupbox)
+        self.spec_fill()
+        self.unit_fill()
+
+    def spec_fill(self):
+        specs = self.lc.spec_for_exec
+        for spec in specs:
+            spec_btn = SpecBtn(spec)
+            self.ui.spec_layout.addWidget(spec_btn)
 
 
-class EditLC(AddLC):
-    def __init__(self, lc_id, parent=None):
-        self.lc = ListControl.get_by_id(lc_id)
-        super().__init__(parent)
-        self.setWindowTitle("Изменить Лист контроля")
-
-    def fill_form(self):
-        self.spec_fill(self.spec_lout)
-        self.unit_fill(lc_id, self.ui.podr_groupbox)
-
-
-class ExecLC(QDialog, BaseLC):
+class ExecLC(QDialog):
     def __init__(self, lc_id, parent=None):
         super().__init__(parent)
         self.lc = ListControl.get_by_id(lc_id)
@@ -122,25 +79,88 @@ class ExecLC(QDialog, BaseLC):
         self.setLayout(self.globalLayout)
         self.unitLayout = QHBoxLayout()
         self.globalLayout.addLayout(self.unitLayout)
-        self.unit_fill(self.lc, self.unitLayout)
+        self.unit_fill()
         self.btn_connect()
+        self.plane_check()
 
     def btn_connect(self):
         for btn in self.findChildren(PlaneBtn):
-            btn.clicked.connect(lambda: self.open_exec_spec(btn.plane, self.lc.id))
+            btn.clicked.connect(partial(self.open_exec_spec, btn.plane))
 
-    def open_exec_spec(self, plane, lc_id):
-        spec_window = ExecSpec(plane, lc_id)
+    def open_exec_spec(self, plane):
+        spec_window = ExecSpec(plane, self.lc)
         spec_window.exec()
 
+    def unit_fill(self):
+        for unit in self.lc.planes_for_exec.keys():
+            i, j = 0, 0
+            unit_groupbox = PlaneGroupBox(Unit.get(Unit.name == unit))
+            unit_lout = QGridLayout()
+            unit_groupbox.setLayout(unit_lout)
+            planes = self.lc.planes_for_exec[unit]
+            for plane in planes:
+                i += 1
+                btn_plane = PlaneBtn(plane)
+                btn_plane.setChecked(True)
+                unit_lout.addWidget(btn_plane, j, i)
+                if i > 2:
+                    j += 1
+                    i = 0
+            self.unitLayout.addWidget(unit_groupbox)
 
-class ExecSpec(QDialog, BaseLC):
-    def __init__(self, plane, lc_id, parent=None):
+    def plane_check(self):
+        planes = self.findChildren(PlaneBtn)
+        specs = self.lc.spec_for_exec
+        for plane_btn in planes:
+            exec_specs = ListControlExec.select(ListControlExec.spec).where(ListControlExec.id_lk == self.lc.id, ListControlExec.plane == plane_btn.plane.id)
+            print("Lenght = ")
+            print(exec_specs.count())
+            for spec in exec_specs:
+                print(spec.spec)
+                print(plane_btn.plane.bort_num)
+
+
+
+
+class ExecSpec(QDialog):
+    def __init__(self, plane: Plane, lc: ListControl, parent=None):
         super().__init__(parent)
-        self.lc = ListControl.get_by_id(lc_id)
+        self.lc = lc
+        self.plane = plane
         self.resize(300, 100)
         self.setWindowTitle('Отметь выполненные специальности')
         self.globalLayout = QHBoxLayout(self)
         self.setLayout(self.globalLayout)
-        self.spec_fill(self.globalLayout, self.lc, plane)
+        self.spec_fill(self.globalLayout, self.lc)
+
+    def spec_fill(self, layout, lc):
+        specs = lc.spec_for_exec
+        for spec in specs:
+            spec_obj = Spec.get(spec)
+            btn = SpecBtn(spec_obj, lc)
+            btn.clicked.connect(partial(self.switch_spec, self.lc.id, self.plane.id, spec_obj.id))
+            spec_check = ListControlExec.get_or_none(
+                id_lk=self.lc.id,
+                plane=self.plane.id,
+                spec=spec_obj.id
+            )
+            if spec_check is None:
+                btn.setChecked(False)
+            else:
+                btn.setChecked(True)
+
+            layout.addWidget(btn)
+
+    @staticmethod
+    def switch_spec(lc_id, plane_id, spec_id):
+        res = ListControlExec.get_or_create(
+            id_lk=lc_id,
+            plane=plane_id,
+            spec=spec_id,
+            defaults={'date': datetime.date.today()}
+        )
+        if not res[1]:
+            res[0].delete_instance()
+
+
 

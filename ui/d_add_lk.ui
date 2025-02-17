@@ -81,6 +81,7 @@
        <property name="title">
         <string>Специальности</string>
        </property>
+       <layout class="QHBoxLayout" name="spec_layout"/>
       </widget>
      </item>
      <item>
@@ -88,6 +89,7 @@
        <property name="title">
         <string>Подразделения</string>
        </property>
+       <layout class="QHBoxLayout" name="unit_layout"/>
       </widget>
      </item>
     </layout>

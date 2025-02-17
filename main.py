@@ -1,6 +1,6 @@
 from PyQt6 import QtWidgets
 
-from database.database import create_tables
+from database.models import create_tables
 from windows import MainWindow
 
 

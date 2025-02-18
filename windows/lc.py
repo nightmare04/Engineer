@@ -1,12 +1,10 @@
 import datetime
 from functools import partial
-
-from PyQt6 import QtWidgets
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
-
 from ui import Ui_D_add_lk
-from database import *
-from custom_widgets import *
+from database.models import *
+from custom_widgets.groupboxs import PlaneGroupBox
+from custom_widgets.buttons import SpecBtn, PlaneBtn
 
 
 class AddLC(QDialog):
@@ -38,12 +36,13 @@ class AddLC(QDialog):
             unit_groupbox.setLayout(unit_lout)
             for plane in Plane.select().join(Unit).where(Plane.unit == unit.id):
                 i += 1
-                btn_plane = PlaneBtn(plane.bort_num)
-                btn_plane.setChecked(True)
-                unit_lout.addWidget(btn_plane, j, i)
-                if i > 2:
-                    j += 1
-                    i = 0
+                if plane.not_deleted:
+                    btn_plane = PlaneBtn(plane.bort_num)
+                    btn_plane.setChecked(True)
+                    unit_lout.addWidget(btn_plane, j, i)
+                    if i > 2:
+                        j += 1
+                        i = 0
             self.ui.unit_layout.addWidget(unit_groupbox)
 
 

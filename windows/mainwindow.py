@@ -1,17 +1,9 @@
-import datetime
 from functools import partial
-
 from PyQt6 import QtWidgets, QtGui
-from PyQt6.QtGui import QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QGroupBox
-
-from custom_widgets import PlaneGroupBox, PlaneBtn, SpecBtn
-from database.models import *
-from database.lc import *
 from ui import Ui_MainWindow
-import windows.lc
-from windows.lc import EditLC, AddLC, ExecLC
-
+from database.lc import create_tables, fill_lc, add_lc
+from windows.lc import AddLC
+from lists import PlanesList
 
 class MainWindow(QtWidgets.QMainWindow):
     def __init__(self, parent=None):
@@ -22,13 +14,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle("ИАС")
         self.ui.stackedWidget.setCurrentWidget(self.ui.lk_page)
         fill_lc(self.ui.tableView)
-        self.ui.btn_add_lk.clicked.connect(self.add_lc)
+        self.ui.btn_add_lk.clicked.connect(self.add_lc_w)
         self.ui.btn_pki.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.pki_page))
         self.ui.btn_lk.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.lk_page))
         self.ui.btn_ispr.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.ispr_page))
         self.ui.btn_rekl.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.rekl_page))
+        self.ui.planes_action.triggered.connect(lambda: PlanesList())
 
-    def add_lc(self):
+    def add_lc_w(self):
         lcw = AddLC()
         if lcw.exec():
             add_lc(lcw)

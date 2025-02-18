@@ -49,6 +49,7 @@ class Plane(BaseModel):
     zav_num = CharField(max_length=30, null=False)
     bort_num = CharField(max_length=10, null=False)
     unit = ForeignKeyField(Unit)
+    not_deleted = BooleanField(default=False)
 
     class Meta:
         db_table = 'planes'
@@ -56,6 +57,7 @@ class Plane(BaseModel):
 
 class Spec(BaseModel):
     name = CharField(max_length=100, null=False)
+    not_deleted = BooleanField(default=False)
 
     class Meta:
         db_table = 'specs'

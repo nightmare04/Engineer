@@ -2,12 +2,12 @@ from operator import truediv
 
 from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QPushButton
-from database.models import Plane, Spec
+from database.models import Plane, Spec, Unit
 
 
 class PlaneBtn(QPushButton):
-    def __init__(self, plane: str, parent=None):
-        self.plane = Plane.get(Plane.bort_num == plane)
+    def __init__(self, plane: Plane, parent=None):
+        self.plane = plane
         super().__init__(self.plane.bort_num, parent)
         self.setFixedSize(QSize(40, 40))
         self.setCheckable(True)
@@ -22,3 +22,11 @@ class SpecBtn(QPushButton):
         self.lc = lc
         self.setFixedSize(QSize(80, 30))
         self.setCheckable(True)
+
+
+class UnitBtn(QPushButton):
+    def __init__(self, unit: Unit, parent=None):
+        self.unit = unit
+        super().__init__(parent)
+        self.setText(unit.name)
+

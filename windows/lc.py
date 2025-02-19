@@ -37,7 +37,7 @@ class AddLC(QDialog):
             for plane in Plane.select().join(Unit).where(Plane.unit == unit.id):
                 i += 1
                 if plane.not_deleted:
-                    btn_plane = PlaneBtn(plane.bort_num)
+                    btn_plane = PlaneBtn(plane)
                     btn_plane.setChecked(True)
                     unit_lout.addWidget(btn_plane, j, i)
                     if i > 2:
@@ -108,17 +108,13 @@ class ExecLC(QDialog):
             self.unitLayout.addWidget(unit_groupbox)
 
     def plane_check(self):
-        planes = self.findChildren(PlaneBtn)
-        specs = self.lc.spec_for_exec
-        for plane_btn in planes:
-            exec_specs = ListControlExec.select(ListControlExec.spec).where(ListControlExec.id_lk == self.lc.id, ListControlExec.plane == plane_btn.plane.id)
-            print("Lenght = ")
-            print(exec_specs.count())
-            for spec in exec_specs:
-                print(spec.spec)
-                print(plane_btn.plane.bort_num)
-
-
+        pass
+        # planes = self.findChildren(PlaneBtn)
+        # specs = self.lc.spec_for_exec
+        # for plane_btn in planes:
+        #     exec_specs = ListControlExec.select(ListControlExec.spec).where(ListControlExec.id_lk == self.lc.id, ListControlExec.plane == plane_btn.plane.id)
+        #     for spec in exec_specs:
+        #
 
 
 class ExecSpec(QDialog):
@@ -160,6 +156,3 @@ class ExecSpec(QDialog):
         )
         if not res[1]:
             res[0].delete_instance()
-
-
-

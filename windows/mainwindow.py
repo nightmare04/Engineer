@@ -28,9 +28,3 @@ class MainWindow(QtWidgets.QMainWindow):
         if lcw.exec():
             add_lc(lcw)
         fill_lc(self.ui.tableView)
-
-
-
-
-
-

@@ -29,4 +29,3 @@ class UnitBtn(QPushButton):
         self.unit = unit
         super().__init__(parent)
         self.setText(unit.name)
-

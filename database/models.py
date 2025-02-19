@@ -45,10 +45,10 @@ class Unit(BaseModel):
 
 
 class Plane(BaseModel):
-    type = ForeignKeyField(PlaneType)
+    type = ForeignKeyField(PlaneType, backref='planes')
     zav_num = CharField(max_length=30, null=False)
     bort_num = CharField(max_length=10, null=False)
-    unit = ForeignKeyField(Unit)
+    unit = ForeignKeyField(Unit, backref='planes')
     not_deleted = BooleanField(default=False)
 
     class Meta:
@@ -64,9 +64,9 @@ class Spec(BaseModel):
 
 
 class ListControlExec(BaseModel):
-    id_lk = ForeignKeyField(ListControl)
-    plane = ForeignKeyField(Plane)
-    spec = ForeignKeyField(Spec)
+    id_lk = ForeignKeyField(ListControl, backref='lcexec')
+    plane = ForeignKeyField(Plane, backref='lcexec')
+    spec = ForeignKeyField(Spec, backref='lcexec')
     date = DateField()
 
     class Meta:

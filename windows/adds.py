@@ -34,6 +34,7 @@ class AddPlane(Adds):
         super().__init__(parent)
         self.setWindowTitle("Добавить самолет")
 
+        self.plane = Plane()
         self.type_combobox = QComboBox()
         self.zav_num = QLineEdit()
         self.bort_num = QLineEdit()
@@ -44,13 +45,37 @@ class AddPlane(Adds):
         self.formlayout.addRow("&Бортовой номер", self.bort_num)
         self.formlayout.addRow("&Подразделение", self.unit_combobox)
 
+        for unit in Unit.select():
+            self.unit_combobox.addItem(unit.name, unit.id)
+
+        for type in PlaneType.select():
+            self.type_combobox.addItem(type.type, type.id)
+
     def add(self):
         plane = Plane()
         plane.bort_num = self.bort_num.text()
         plane.zav_num = self.zav_num.text()
-        plane.unit = self.unit_combobox.currentText()
-        plane.type = self.type_combobox.currentText()
+        plane.unit = self.unit_combobox.currentData()
+        plane.type = self.type_combobox.currentData()
         plane.save()
+        self.accept()
+
+    def load(self, plane: Plane):
+        self.plane = plane
+        self.bort_num.setText(plane.bort_num)
+        self.zav_num.setText(plane.zav_num)
+        self.type_combobox.setCurrentIndex(self.type_combobox.findData(str(plane.type)))
+        self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(plane.unit)))
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.update)
+
+    def update(self):
+        self.plane.bort_num = self.bort_num.text()
+        self.plane.zav_num = self.zav_num.text()
+        self.plane.unit = self.unit_combobox.currentData()
+        self.plane.type = self.type_combobox.currentData()
+        self.plane.save()
         self.accept()
 
 
@@ -63,9 +88,9 @@ class AddType(Adds):
         self.formlayout.addRow("&Тип самолета", self.type)
 
     def add(self):
-        typeplane = PlaneType()
-        typeplane.type = self.type.text()
-        typeplane.save()
+        planetype = PlaneType()
+        planetype.type = self.type.text()
+        planetype.save()
         self.accept()
 
 

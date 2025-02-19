@@ -2,8 +2,10 @@ from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
 
 from custom_widgets import UnitBtn, PlaneBtn
-from database.models import Plane, Unit
+from database.models import Plane, Unit, PlaneType
 from windows.adds import AddPlane, AddUnit
+from peewee import *
+from functools import partial
 
 
 class Lists(QDialog):
@@ -26,12 +28,13 @@ class Lists(QDialog):
     def add(self):
         pass
 
+
 class PlanesList(Lists):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Самолеты")
-        self.table.setColumnCount(4)
-        self.table.setHorizontalHeaderLabels(["Тип", "Бортовой номер", "Заводской номер", ""])
+        self.table.setColumnCount(5)
+        self.table.setHorizontalHeaderLabels(["Тип", "Подразделение", "Бортовой номер", "Заводской номер", ""])
         self.table.resizeColumnsToContents()
         self.fill()
 
@@ -42,22 +45,26 @@ class PlanesList(Lists):
         i = 0
         for plane in planes:
             plane_btn = PlaneBtn(plane)
+            plane_btn.clicked.connect(partial(self.edit, plane_btn.plane))
             plane_btn.setText("Изменить")
             plane_btn.setCheckable(False)
-            plane_btn.setFixedSize(QSize(100,30))
-            self.table.setItem(i, 0, QTableWidgetItem(str(plane.type)))
-            self.table.setItem(i, 1, QTableWidgetItem(str(plane.bort_num)))
-            self.table.setItem(i, 2, QTableWidgetItem(str(plane.zav_num)))
-            self.table.setCellWidget(i, 3, plane_btn)
+            plane_btn.setFixedSize(QSize(100, 30))
+            self.table.setItem(i, 0, QTableWidgetItem(str(plane.type.type)))
+            self.table.setItem(i, 1, QTableWidgetItem(str(plane.unit.name)))
+            self.table.setItem(i, 2, QTableWidgetItem(str(plane.bort_num)))
+            self.table.setItem(i, 3, QTableWidgetItem(str(plane.zav_num)))
+            self.table.setCellWidget(i, 4, plane_btn)
             i += 1
 
-    def add(self):
-        planeadd = AddPlane()
-        planeadd.exec()
-        self.fill()
+    def edit(self, plane: Plane):
+        plane_w = AddPlane()
+        plane_w.load(plane)
+        if plane_w.exec():
+            self.fill()
 
-    def edit(self, plane:Plane):
-        pass
+    def add(self):
+        if AddPlane().exec():
+            self.fill()
 
 
 class UnitList(Lists):
@@ -89,5 +96,5 @@ class UnitList(Lists):
         unitadd.exec()
         self.fill()
 
-    def edit(self, unit:Unit):
+    def edit(self, unit: Unit):
         pass

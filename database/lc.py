@@ -69,7 +69,7 @@ def dump_plane(w):
         res_plane = []
         planes = unit_gb.findChildren(PlaneBtn)
         for plane in planes:
-            if plane.isChecked():
+            if plane.isChecked() and plane.plane.not_deleted:
                 res_plane.append(plane.plane.id)
         if res_plane:
             res.update({unit_gb.unit.id: res_plane})

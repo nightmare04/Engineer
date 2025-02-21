@@ -6,6 +6,7 @@ if __name__ == '__main__':
     import sys
     # sys.excepthook = except_hook
     app = QtWidgets.QApplication(sys.argv)
+    app.setStyle('Fusion')
     # app.setWindowIcon(QtGui.QIcon('ui/main.ico'))
     main = MainWindow()
     main.show()

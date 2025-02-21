@@ -40,6 +40,7 @@ class ListControlModel(QAbstractTableModel):
         res = "Не выполнено на ВС: "
         for plane_id in planes_incomplete:
             res += f'{Plane.get_by_id(plane_id).bort_num}, '
+        res = res[:-2]
         return res
 
     def rowCount(self, *args, **kwargs) -> int:

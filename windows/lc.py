@@ -91,6 +91,10 @@ class ExecLC(QDialog):
     def open_exec_spec(self, plane_btn):
         spec_window = ExecSpec(plane_btn, self.lc)
         spec_window.exec()
+        btns = self.findChildren(PlaneBtn)
+        for bnt in btns:
+            bnt.check_exec(self.lc)
+
 
     def unit_fill(self):
         for unit in self.lc.planes_for_exec.keys():
@@ -114,6 +118,7 @@ class ExecLC(QDialog):
         planes_btn = self.findChildren(PlaneBtn)
         for plane_btn in planes_btn:
             plane_btn.check_exec(self.lc)
+
 
 
 class ExecSpec(QDialog):
@@ -144,7 +149,6 @@ class ExecSpec(QDialog):
                 btn.setStyleSheet("background-color: red")
             else:
                 btn.setStyleSheet("background-color: green")
-
             layout.addWidget(btn)
 
     def switch_spec(self, btn, lc_id, plane_id, spec_id):

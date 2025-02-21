@@ -1,6 +1,7 @@
 from operator import truediv
 
 from PyQt6.QtCore import QSize
+from PyQt6.QtGui import QPalette, QBrush, QColor
 from PyQt6.QtWidgets import QPushButton
 from database.models import Plane, Spec, Unit, ListControlExec
 
@@ -25,12 +26,14 @@ class PlaneBtn(QPushButton):
         spec_exec = []
         for row in exec_specs:
             spec_exec.append(row[0])
+
         if specs_for_exec == spec_exec:
             self.setStyleSheet("background-color: green")
-            self.update()
+
         else:
             self.setStyleSheet("background-color: red")
-            self.update()
+        self.update()
+
 
 class SpecBtn(QPushButton):
     def __init__(self, spec: Spec, lc=None):

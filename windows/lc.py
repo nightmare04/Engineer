@@ -1,5 +1,7 @@
 import datetime
 from functools import partial
+
+from PyQt6.QtGui import QBrush, QColor
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
 from ui import Ui_D_add_lk
 from database.models import *
@@ -86,21 +88,22 @@ class ExecLC(QDialog):
         for btn in self.findChildren(PlaneBtn):
             btn.clicked.connect(partial(self.open_exec_spec, btn.plane))
 
-    def open_exec_spec(self, plane):
-        spec_window = ExecSpec(plane, self.lc)
+    def open_exec_spec(self, plane_btn):
+        spec_window = ExecSpec(plane_btn, self.lc)
         spec_window.exec()
 
     def unit_fill(self):
         for unit in self.lc.planes_for_exec.keys():
             i, j = 0, 0
-            unit_groupbox = PlaneGroupBox(Unit.get(Unit.name == unit))
+            unit_groupbox = PlaneGroupBox(Unit.get(Unit.id == unit))
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
             planes = self.lc.planes_for_exec[unit]
-            for plane in planes:
+            for plane_id in planes:
                 i += 1
-                btn_plane = PlaneBtn(plane)
-                btn_plane.setChecked(True)
+                plane = Plane.get_by_id(plane_id)
+                btn_plane = PlaneBtn(plane, self.lc)
+                btn_plane.setCheckable(False)
                 unit_lout.addWidget(btn_plane, j, i)
                 if i > 2:
                     j += 1
@@ -108,13 +111,9 @@ class ExecLC(QDialog):
             self.unitLayout.addWidget(unit_groupbox)
 
     def plane_check(self):
-        pass
-        # planes = self.findChildren(PlaneBtn)
-        # specs = self.lc.spec_for_exec
-        # for plane_btn in planes:
-        #     exec_specs = ListControlExec.select(ListControlExec.spec).where(ListControlExec.id_lk == self.lc.id, ListControlExec.plane == plane_btn.plane.id)
-        #     for spec in exec_specs:
-        #
+        planes_btn = self.findChildren(PlaneBtn)
+        for plane_btn in planes_btn:
+            plane_btn.check_exec(self.lc)
 
 
 class ExecSpec(QDialog):
@@ -124,35 +123,39 @@ class ExecSpec(QDialog):
         self.plane = plane
         self.resize(300, 100)
         self.setWindowTitle('Отметь выполненные специальности')
-        self.globalLayout = QHBoxLayout(self)
+        self.globalLayout = QVBoxLayout()
         self.setLayout(self.globalLayout)
-        self.spec_fill(self.globalLayout, self.lc)
+        self.specLayout = QHBoxLayout()
+        self.globalLayout.addLayout(self.specLayout)
+        self.spec_fill(self.specLayout, self.lc)
 
     def spec_fill(self, layout, lc):
         specs = lc.spec_for_exec
         for spec in specs:
             spec_obj = Spec.get(spec)
             btn = SpecBtn(spec_obj, lc)
-            btn.clicked.connect(partial(self.switch_spec, self.lc.id, self.plane.id, spec_obj.id))
+            btn.clicked.connect(partial(self.switch_spec, btn, self.lc.id, self.plane.id, spec_obj.id))
             spec_check = ListControlExec.get_or_none(
-                id_lk=self.lc.id,
-                plane=self.plane.id,
-                spec=spec_obj.id
+                lc_id=self.lc.id,
+                plane_id=self.plane.id,
+                spec_id=spec_obj.id
             )
             if spec_check is None:
-                btn.setChecked(False)
+                btn.setStyleSheet("background-color: red")
             else:
-                btn.setChecked(True)
+                btn.setStyleSheet("background-color: green")
 
             layout.addWidget(btn)
 
-    @staticmethod
-    def switch_spec(lc_id, plane_id, spec_id):
+    def switch_spec(self, btn, lc_id, plane_id, spec_id):
         res = ListControlExec.get_or_create(
-            id_lk=lc_id,
-            plane=plane_id,
-            spec=spec_id,
+            lc_id=lc_id,
+            plane_id=plane_id,
+            spec_id=spec_id,
             defaults={'date': datetime.date.today()}
         )
         if not res[1]:
             res[0].delete_instance()
+            btn.setStyleSheet("background-color: red")
+        else:
+            btn.setStyleSheet("background-color: green")

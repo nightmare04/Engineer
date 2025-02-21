@@ -1,12 +1,12 @@
-from PyQt6.QtCore import QSize
+from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
+from PyQt6.uic.Compiler.qtproxies import QtCore
 
 from custom_widgets import UnitBtn, PlaneBtn
 from database.models import Plane, Unit, PlaneType
 from windows.adds import AddPlane, AddUnit
 from peewee import *
 from functools import partial
-
 
 class Lists(QDialog):
     def __init__(self, parent=None):
@@ -36,6 +36,11 @@ class PlanesList(Lists):
         self.table.setColumnCount(5)
         self.table.setHorizontalHeaderLabels(["Тип", "Подразделение", "Бортовой номер", "Заводской номер", ""])
         self.table.resizeColumnsToContents()
+        self.table.setColumnWidth(0, 80)
+        self.table.setColumnWidth(3, 150)
+        self.table.setColumnWidth(4, 100)
+        self.table.setSortingEnabled(False)
+        self.table.sortByColumn(1, Qt.SortOrder.AscendingOrder)
         self.fill()
 
     def fill(self):

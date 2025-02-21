@@ -64,9 +64,9 @@ class Spec(BaseModel):
 
 
 class ListControlExec(BaseModel):
-    id_lk = ForeignKeyField(ListControl, backref='lcexec')
-    plane = ForeignKeyField(Plane, backref='lcexec')
-    spec = ForeignKeyField(Spec, backref='lcexec')
+    lc_id = ForeignKeyField(ListControl, backref='lcexec')
+    plane_id = ForeignKeyField(Plane, backref='lcexec')
+    spec_id = ForeignKeyField(Spec, backref='lcexec')
     date = DateField()
 
     class Meta:

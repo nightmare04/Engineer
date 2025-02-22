@@ -31,6 +31,7 @@ class ListControl(BaseModel):
 
 class PlaneType(BaseModel):
     type = CharField(max_length=30, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'plane_types'
@@ -39,6 +40,7 @@ class PlaneType(BaseModel):
 class Unit(BaseModel):
     name = CharField(max_length=100, null=False)
     reglament = BooleanField(default=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'units'
@@ -49,7 +51,7 @@ class Plane(BaseModel):
     zav_num = CharField(max_length=30, null=False)
     bort_num = CharField(max_length=10, null=False)
     unit = ForeignKeyField(Unit, backref='planes')
-    not_deleted = BooleanField(default=False)
+    not_deleted = BooleanField(default=True)
 
     class Meta:
         db_table = 'planes'
@@ -57,7 +59,7 @@ class Plane(BaseModel):
 
 class Spec(BaseModel):
     name = CharField(max_length=100, null=False)
-    not_deleted = BooleanField(default=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'specs'

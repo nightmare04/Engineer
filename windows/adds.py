@@ -2,6 +2,7 @@ from functools import partial
 
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
     QFormLayout, QComboBox, QLineEdit, QCheckBox
+from PyQt6.QtCore import Qt
 
 from database import PlaneType, Plane, Unit, Spec
 
@@ -180,21 +181,22 @@ class AddUnit(Adds):
 
             self.btn_delete = QPushButton("Удалить")
             self.btnlayout.addWidget(self.btn_delete)
-            self.btn_del.clicked.connect(partial(self.delete, self.unit))
+            self.btn_delete.clicked.connect(partial(self.delete, self.unit))
 
     def add(self):
         unit = Unit()
         unit.name = self.unit_edit.text()
-        unit.reglament = self.reglament.checkState()
+        unit.reglament = self.reglament.isChecked()
         unit.save()
         self.accept()
 
     def save(self):
         self.unit.name = self.unit_edit.text()
-        self.unit.reglament = self.reglament.checkState()
+        self.unit.reglament = self.reglament.isChecked()
         self.unit.save()
         self.accept()
 
     def load(self):
         self.unit_edit.setText(self.unit.name)
-        self.reglament.setChecked(self.unit.reglament)
+        if self.unit.reglament:
+            self.reglament.setCheckState(Qt.CheckState.Checked)

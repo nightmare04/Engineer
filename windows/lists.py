@@ -44,7 +44,7 @@ class PlanesList(Lists):
         self.fill()
 
     def fill(self):
-        planes = Plane.select().where(Plane.not_deleted == True)
+        planes = Plane.select().where(Plane.not_delete == True)
         row_count = planes.count()
         self.table.setRowCount(row_count)
         i = 0
@@ -84,7 +84,7 @@ class UnitList(Lists):
         self.fill()
 
     def fill(self):
-        units = Unit.select().where(Unit.not_deleted == True)
+        units = Unit.select().where(Unit.not_delete == True)
         row_count = units.count()
         self.table.setRowCount(row_count)
         i, count = 0, row_count
@@ -95,18 +95,20 @@ class UnitList(Lists):
                 unit_btn = UnitBtn(unit)
                 unit_btn.setFixedSize(QSize(100, 30))
                 unit_btn.setText("Изменить")
-                unit_btn.clicked.connect(lambda: self.edit(unit_btn.unit))
+                unit_btn.clicked.connect(partial(self.edit,unit_btn.unit))
                 self.table.setItem(i, 0, QTableWidgetItem(unit.name))
                 self.table.setCellWidget(i, 1, unit_btn)
                 i += 1
 
     def add(self):
         unitadd = AddUnit()
-        unitadd.exec()
-        self.fill()
+        if unitadd.exec():
+            self.fill()
 
     def edit(self, unit: Unit):
-        pass
+        unitedit = AddUnit(unit)
+        if unitedit.exec():
+            self.fill()
 
 
 class TypesList(Lists):

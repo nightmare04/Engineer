@@ -26,10 +26,10 @@ class ListControlModel(QAbstractTableModel):
 
     def get_not_complete(self, lc: ListControl) -> str:
         planes_incomplete = []
-        for unit in lc.planes_for_exec.keys():
+        for unit in lc.planes["to_exec"].keys():
             plane_ex = True
-            for plane_id in lc.planes_for_exec[unit]:
-                for spec in lc.spec_for_exec:
+            for plane_id in lc.planes["to_exec"][unit]:
+                for spec in lc.specs["to_exec"]:
                     if ListControlExec.get_or_none(ListControlExec.plane_id == plane_id,
                                                    ListControlExec.lc_id == lc.id,
                                                    ListControlExec.spec_id == spec) is None:
@@ -107,8 +107,8 @@ def add_lc(w):
     lc.tlg = w.ui.tlgEdit.text()
     lc.tlg_date = w.ui.tlgDateEdit.date().toPyDate()
     lc.lc_number = w.ui.lcEdit.text()
-    lc.planes_for_exec = dump_plane(w)
-    lc.spec_for_exec = dump_spec(w)
+    lc.planes = dump_plane(w)
+    lc.specs = dump_spec(w)
     lc.tlg_deadline = w.ui.tlgDeadlineEdit.date().toPyDate()
     lc.description = w.ui.textEdit.toPlainText()
     lc.save()
@@ -118,8 +118,8 @@ def update_lc(w, lc: ListControl):
     lc.tlg = w.ui.tlgEdit.text()
     lc.tlg_date = w.ui.tlgDateEdit.date().toPyDate()
     lc.lc_number = w.ui.lcEdit.text()
-    lc.planes_for_exec = self.dump_plane(w)
-    lc.spec_for_exec = self.dump_spec(w)
+    lc.planes = self.dump_plane(w)
+    lc.spec = self.dump_spec(w)
     lc.tlg_deadline = w.ui.tlgDeadlineEdit.date().toPyDate()
     lc.description = w.ui.textEdit.toPlainText()
     lc.update()

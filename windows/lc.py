@@ -24,27 +24,26 @@ class AddLC(QDialog):
         self.unit_fill()
 
     def spec_fill(self):
-        specs = Spec.select()
+        specs = Spec.select().where(Spec.not_delete == True)
         for spec in specs:
             btn_spec = SpecBtn(spec)
             self.ui.spec_layout.addWidget(btn_spec)
 
     def unit_fill(self):
-        for unit in Unit.select():
+        for unit in Unit.select().where(Unit.not_delete == True):
             i = 0
             j = 0
             unit_groupbox = PlaneGroupBox(unit, True, self.ui.podr_groupbox)
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
-            for plane in Plane.select().join(Unit).where(Plane.unit == unit.id):
+            for plane in Plane.select().join(Unit).where(Plane.unit == unit.id, Plane.not_delete == True):
                 i += 1
-                if plane.not_deleted:
-                    btn_plane = PlaneBtn(plane)
-                    btn_plane.setChecked(True)
-                    unit_lout.addWidget(btn_plane, j, i)
-                    if i > 2:
-                        j += 1
-                        i = 0
+                btn_plane = PlaneBtn(plane)
+                btn_plane.setChecked(True)
+                unit_lout.addWidget(btn_plane, j, i)
+                if i > 2:
+                    j += 1
+                    i = 0
             self.ui.unit_layout.addWidget(unit_groupbox)
 
 
@@ -145,12 +144,12 @@ class ExecLC(QDialog):
             bnt.check_exec(self.lc)
 
     def unit_fill(self):
-        for unit in self.lc.planes_for_exec.keys():
+        for unit in self.lc.planes["to_exec"].keys():
             i, j = 0, 0
             unit_groupbox = PlaneGroupBox(Unit.get(Unit.id == unit))
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
-            planes = self.lc.planes_for_exec[unit]
+            planes = self.lc.planes["to_exec"][unit]
             for plane_id in planes:
                 i += 1
                 plane = Plane.get_by_id(plane_id)
@@ -182,7 +181,7 @@ class ExecSpec(QDialog):
         self.spec_fill(self.specLayout, self.lc)
 
     def spec_fill(self, layout, lc):
-        specs = lc.spec_for_exec
+        specs = lc.specs["to_exec"]
         for spec in specs:
             spec_obj = Spec.get(spec)
             btn = SpecBtn(spec_obj, lc)

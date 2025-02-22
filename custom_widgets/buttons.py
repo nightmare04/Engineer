@@ -22,12 +22,16 @@ class PlaneBtn(QPushButton):
                            "PlaneBtn:checked{background-color: green;}")
 
     def check_exec(self, lc):
-        specs_for_exec = lc.spec_for_exec
+        specs_for_exec = lc.specs["to_exec"]
         exec_specs = (ListControlExec
                       .select(ListControlExec.spec_id)
                       .where(ListControlExec.lc_id == lc.id,
                              ListControlExec.plane_id == self.plane.id).order_by(+ListControlExec.spec_id).tuples())
         spec_exec = []
+        if len(exec_specs) == 0:
+            self.setStyleSheet("background-color: red")
+            return
+
         for row in exec_specs:
             spec_exec.append(row[0])
 

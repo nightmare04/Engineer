@@ -80,7 +80,6 @@ class UnitList(Lists):
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(["Наименование", ""])
         self.table.resizeColumnsToContents()
-        self.btn_add.clicked.connect(self.add)
         self.fill()
 
     def fill(self):
@@ -121,7 +120,7 @@ class TypesList(Lists):
         self.fill()
 
     def fill(self):
-        types = PlaneType.select().where(PlaneType.not_deleted == True)
+        types = PlaneType.select().where(PlaneType.not_delete == True)
         row_count = types.count()
         self.table.setRowCount(row_count)
         i, count = 0, row_count
@@ -156,7 +155,6 @@ class SpecList(Lists):
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(["Наименование", ""])
         self.table.resizeColumnsToContents()
-        self.btn_add.clicked.connect(self.add)
         self.fill()
 
     def fill(self):
@@ -169,6 +167,7 @@ class SpecList(Lists):
                 if not spec.not_delete:
                     continue
                 spec_btn = SpecBtn(spec)
+                spec_btn.setStyleSheet(QPushButton().styleSheet())
                 spec_btn.setFixedSize(QSize(100, 30))
                 spec_btn.setText("Изменить")
                 spec_btn.clicked.connect(partial(self.edit, spec_btn.spec))

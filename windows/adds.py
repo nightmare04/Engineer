@@ -53,10 +53,10 @@ class AddPlane(Adds):
         self.formlayout.addRow("&Бортовой номер", self.bort_num)
         self.formlayout.addRow("&Подразделение", self.unit_combobox)
 
-        for unit in Unit.select():
+        for unit in Unit.select().where(Unit.not_delete == True):
             self.unit_combobox.addItem(unit.name, unit.id)
 
-        for type_plane in PlaneType.select():
+        for type_plane in PlaneType.select().where(PlaneType.not_delete == True):
             self.type_combobox.addItem(type_plane.type, type_plane.id)
 
         if self.plane is not None:

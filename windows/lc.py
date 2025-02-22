@@ -123,7 +123,6 @@ class ExecLC(QDialog):
         self.btn_connect()
         self.plane_check()
 
-
     def edit(self):
         edit_lc_w = EditLC(self.lc)
         edit_lc_w.exec()

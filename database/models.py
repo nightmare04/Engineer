@@ -51,7 +51,7 @@ class Plane(BaseModel):
     zav_num = CharField(max_length=30, null=False)
     bort_num = CharField(max_length=10, null=False)
     unit = ForeignKeyField(Unit, backref='planes')
-    not_deleted = BooleanField(default=True)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'planes'

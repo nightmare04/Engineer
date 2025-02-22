@@ -1,3 +1,5 @@
+from functools import partial
+
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
     QFormLayout, QComboBox, QLineEdit, QCheckBox
 
@@ -28,13 +30,18 @@ class Adds(QDialog):
     def add(self):
         pass
 
+    def delete(self, model):
+        model.not_delete = False
+        model.save()
+        self.accept()
+
 
 class AddPlane(Adds):
-    def __init__(self, parent=None):
+    def __init__(self, plane: Plane = None, parent=None):
         super().__init__(parent)
+        self.plane = plane
         self.setWindowTitle("Добавить самолет")
 
-        self.plane = Plane()
         self.type_combobox = QComboBox()
         self.zav_num = QLineEdit()
         self.bort_num = QLineEdit()
@@ -51,6 +58,17 @@ class AddPlane(Adds):
         for type_plane in PlaneType.select():
             self.type_combobox.addItem(type_plane.type, type_plane.id)
 
+        if self.plane is not None:
+            self.setWindowTitle("Изменить самолет")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.update_plane)
+            self.load()
+
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(partial(self.delete, self.plane))
+
     def add(self):
         plane = Plane()
         plane.bort_num = self.bort_num.text()
@@ -60,12 +78,11 @@ class AddPlane(Adds):
         plane.save()
         self.accept()
 
-    def load(self, plane: Plane):
-        self.plane = plane
-        self.bort_num.setText(plane.bort_num)
-        self.zav_num.setText(plane.zav_num)
-        self.type_combobox.setCurrentIndex(self.type_combobox.findData(str(plane.type)))
-        self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(plane.unit)))
+    def load(self):
+        self.bort_num.setText(self.plane.bort_num)
+        self.zav_num.setText(self.plane.zav_num)
+        self.type_combobox.setCurrentIndex(self.type_combobox.findData(str(self.plane.type)))
+        self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(self.plane.unit)))
         self.btn_ok.setText("Сохранить")
         self.btn_ok.clicked.disconnect()
         self.btn_ok.clicked.connect(self.update_plane)
@@ -80,12 +97,22 @@ class AddPlane(Adds):
 
 
 class AddType(Adds):
-    def __init__(self, parent=None):
+    def __init__(self, type_plane: PlaneType = None, parent=None):
         super().__init__(parent)
+        self.type_plane = type_plane
         self.setWindowTitle("Добавить тип самолета")
-        self.type_plane = None
         self.type_plane_edit = QLineEdit()
         self.formlayout.addRow("&Тип самолета", self.type_plane_edit)
+        if self.type_plane is not None:
+            self.setWindowTitle("Изменить тип самолета")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.update_type)
+            self.load()
+
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(partial(self.delete, self.type_plane))
 
     def add(self):
         planetype = PlaneType()
@@ -93,12 +120,8 @@ class AddType(Adds):
         planetype.save()
         self.accept()
 
-    def load(self, type_plane: PlaneType):
-        self.type_plane = type_plane
-        self.type_plane_edit.setText(type_plane.type)
-        self.btn_ok.setText("Сохранить")
-        self.btn_ok.clicked.disconnect()
-        self.btn_ok.clicked.connect(self.update_type)
+    def load(self):
+        self.type_plane_edit.setText(self.type_plane.type)
 
     def update_type(self):
         self.type_plane.type = self.type_plane_edit.text()
@@ -109,7 +132,7 @@ class AddType(Adds):
 class AddSpec(Adds):
     def __init__(self, spec: Spec = None, parent=None):
         super().__init__(parent)
-        self.spec=spec
+        self.spec = spec
         self.setWindowTitle("Добавить специальность")
         self.spec_edit = QLineEdit()
         self.formlayout.addRow("&Наименование", self.spec_edit)
@@ -117,7 +140,12 @@ class AddSpec(Adds):
             self.setWindowTitle("Изменить подразделение")
             self.btn_ok.setText("Сохранить")
             self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.load)
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(partial(self.delete, self.spec))
 
     def add(self):
         spec = Spec()
@@ -129,6 +157,7 @@ class AddSpec(Adds):
         self.spec_edit.setText(self.spec.name)
 
     def save(self):
+        self.spec.name = self.spec_edit.text()
         self.spec.save()
         self.accept()
 
@@ -149,6 +178,10 @@ class AddUnit(Adds):
             self.btn_ok.clicked.connect(self.save)
             self.load()
 
+            self.btn_delete = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_delete)
+            self.btn_del.clicked.connect(partial(self.delete, self.unit))
+
     def add(self):
         unit = Unit()
         unit.name = self.unit_edit.text()
@@ -156,11 +189,12 @@ class AddUnit(Adds):
         unit.save()
         self.accept()
 
-    def load(self):
-        self.unit_edit.setText(self.unit.name)
-        self.reglament.setChecked(self.unit.reglament)
-
     def save(self):
+        self.unit.name = self.unit_edit.text()
+        self.unit.reglament = self.reglament.checkState()
         self.unit.save()
         self.accept()
 
+    def load(self):
+        self.unit_edit.setText(self.unit.name)
+        self.reglament.setChecked(self.unit.reglament)

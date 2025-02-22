@@ -49,6 +49,8 @@ class PlanesList(Lists):
         self.table.setRowCount(row_count)
         i = 0
         for plane in planes:
+            if not plane.not_delete:
+                continue
             plane_btn = PlaneBtn(plane)
             plane_btn.clicked.connect(partial(self.edit, plane_btn.plane))
             plane_btn.setText("Изменить")
@@ -62,8 +64,7 @@ class PlanesList(Lists):
             i += 1
 
     def edit(self, plane: Plane):
-        plane_w = AddPlane()
-        plane_w.load(plane)
+        plane_w = AddPlane(plane)
         if plane_w.exec():
             self.fill()
 
@@ -89,6 +90,8 @@ class UnitList(Lists):
         i, count = 0, row_count
         while i < count:
             for unit in units:
+                if not unit.not_delete:
+                    continue
                 unit_btn = UnitBtn(unit)
                 unit_btn.setFixedSize(QSize(100, 30))
                 unit_btn.setText("Изменить")
@@ -122,6 +125,8 @@ class TypesList(Lists):
         i, count = 0, row_count
         while i < count:
             for type_plane in types:
+                if not type_plane.not_delete:
+                    continue
                 type_btn = TypeBtn(type_plane)
                 type_btn.setFixedSize(QSize(100, 30))
                 type_btn.setText("Изменить")
@@ -131,9 +136,7 @@ class TypesList(Lists):
                 i += 1
 
     def edit(self, type_plane: PlaneType):
-        plane_type_w = AddType()
-        plane_type_w.load(type_plane)
-        plane_type_w.setWindowTitle("Изменить тип")
+        plane_type_w = AddType(type_plane)
         if plane_type_w.exec():
             self.fill()
 
@@ -161,10 +164,12 @@ class SpecList(Lists):
         i, count = 0, row_count
         while i < count:
             for spec in specs:
+                if not spec.not_delete:
+                    continue
                 spec_btn = SpecBtn(spec)
                 spec_btn.setFixedSize(QSize(100, 30))
                 spec_btn.setText("Изменить")
-                spec_btn.clicked.connect(partial(self.edit, spec_btn.spec)
+                spec_btn.clicked.connect(partial(self.edit, spec_btn.spec))
                 self.table.setItem(i, 0, QTableWidgetItem(spec.name))
                 self.table.setCellWidget(i, 1, spec_btn)
                 i += 1

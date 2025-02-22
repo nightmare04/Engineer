@@ -21,8 +21,8 @@ class ListControl(BaseModel):
     lc_number = CharField(max_length=10, null=True)
     answer = CharField(max_length=100, null=True)
     answer_date = DateField(null=True)
-    spec_for_exec = JSONField()
-    planes_for_exec = JSONField()
+    specs = JSONField()
+    planes = JSONField()
     complete_flag = BooleanField(default=False)
 
     class Meta:

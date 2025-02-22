@@ -2,8 +2,9 @@ from functools import partial
 from PyQt6 import QtWidgets, QtGui
 from ui import Ui_MainWindow
 from database.lc import create_tables, fill_lc, add_lc
+from windows.adds import AddType
 from windows.lc import AddLC
-from windows.lists import PlanesList, UnitList
+from windows.lists import PlanesList, UnitList, TypesList, SpecList
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -22,6 +23,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.btn_rekl.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.rekl_page))
         self.ui.planes_action.triggered.connect(lambda: PlanesList().exec())
         self.ui.units_action.triggered.connect(lambda: UnitList().exec())
+        self.ui.type_plane_action.triggered.connect(lambda: TypesList().exec())
+        self.ui.spec_action.triggered.connect(lambda: SpecList().exec())
 
     def add_lc_w(self):
         lcw = AddLC()

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
-    QFormLayout, QComboBox, QLineEdit
+    QFormLayout, QComboBox, QLineEdit, QCheckBox
 
-from database import PlaneType, Plane, Unit
+from database import PlaneType, Plane, Unit, Spec
 
 
 class Adds(QDialog):
@@ -48,8 +48,8 @@ class AddPlane(Adds):
         for unit in Unit.select():
             self.unit_combobox.addItem(unit.name, unit.id)
 
-        for type in PlaneType.select():
-            self.type_combobox.addItem(type.type, type.id)
+        for type_plane in PlaneType.select():
+            self.type_combobox.addItem(type_plane.type, type_plane.id)
 
     def add(self):
         plane = Plane()
@@ -68,9 +68,9 @@ class AddPlane(Adds):
         self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(plane.unit)))
         self.btn_ok.setText("Сохранить")
         self.btn_ok.clicked.disconnect()
-        self.btn_ok.clicked.connect(self.update)
+        self.btn_ok.clicked.connect(self.update_plane)
 
-    def update(self):
+    def update_plane(self):
         self.plane.bort_num = self.bort_num.text()
         self.plane.zav_num = self.zav_num.text()
         self.plane.unit = self.unit_combobox.currentData()
@@ -83,27 +83,84 @@ class AddType(Adds):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Добавить тип самолета")
-
-        self.type = QLineEdit()
-        self.formlayout.addRow("&Тип самолета", self.type)
+        self.type_plane = None
+        self.type_plane_edit = QLineEdit()
+        self.formlayout.addRow("&Тип самолета", self.type_plane_edit)
 
     def add(self):
         planetype = PlaneType()
-        planetype.type = self.type.text()
+        planetype.type = self.type_plane_edit.text()
         planetype.save()
+        self.accept()
+
+    def load(self, type_plane: PlaneType):
+        self.type_plane = type_plane
+        self.type_plane_edit.setText(type_plane.type)
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.update_type)
+
+    def update_type(self):
+        self.type_plane.type = self.type_plane_edit.text()
+        self.type_plane.save()
+        self.accept()
+
+
+class AddSpec(Adds):
+    def __init__(self, spec: Spec = None, parent=None):
+        super().__init__(parent)
+        self.spec=spec
+        self.setWindowTitle("Добавить специальность")
+        self.spec_edit = QLineEdit()
+        self.formlayout.addRow("&Наименование", self.spec_edit)
+        if self.spec is not None:
+            self.setWindowTitle("Изменить подразделение")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.load)
+
+    def add(self):
+        spec = Spec()
+        spec.name = self.spec_edit.text()
+        spec.save()
+        self.accept()
+
+    def load(self):
+        self.spec_edit.setText(self.spec.name)
+
+    def save(self):
+        self.spec.save()
         self.accept()
 
 
 class AddUnit(Adds):
-    def __init__(self, parent=None):
+    def __init__(self, unit: Unit = None, parent=None):
         super().__init__(parent)
+        self.unit = unit
         self.setWindowTitle("Добавить подразделение")
-
-        self.unit = QLineEdit()
-        self.formlayout.addRow("&Наименование", self.unit)
+        self.unit_edit = QLineEdit()
+        self.reglament = QCheckBox()
+        self.formlayout.addRow("&Наименование", self.unit_edit)
+        self.formlayout.addRow("&Регламент", self.reglament)
+        if self.unit is not None:
+            self.setWindowTitle("Изменить подразделение")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
 
     def add(self):
         unit = Unit()
-        unit.name = self.unit.text()
+        unit.name = self.unit_edit.text()
+        unit.reglament = self.reglament.checkState()
         unit.save()
         self.accept()
+
+    def load(self):
+        self.unit_edit.setText(self.unit.name)
+        self.reglament.setChecked(self.unit.reglament)
+
+    def save(self):
+        self.unit.save()
+        self.accept()
+

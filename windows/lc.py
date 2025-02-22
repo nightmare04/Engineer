@@ -57,17 +57,46 @@ class EditLC(QDialog):
         self.setWindowTitle("Изменить Лист контроля")
         self.ui.btn_ok.clicked.connect(self.accept)
         self.ui.btn_cancel.clicked.connect(self.reject)
+        self.delete_btn = QPushButton("Удалить")
+        self.ui.btn_cancel.parent().layout().addWidget(self.delete_btn)
+        self.delete_btn.clicked.connect(self.delete_lc)
         self.fill_form()
+
+    def delete_lc(self):
+        self.lc.delete()
+        self.accept()
 
     def fill_form(self):
         self.spec_fill()
         self.unit_fill()
 
     def spec_fill(self):
-        specs = self.lc.spec_for_exec
-        for spec in specs:
+        specs_id = self.lc.spec
+        for spec_id in specs_id["on_create"]:
+            spec = Spec.get_by_id(spec_id)
             spec_btn = SpecBtn(spec)
+            spec_btn.setChecked(True)
             self.ui.spec_layout.addWidget(spec_btn)
+
+    def unit_fill(self):
+        for unit_id in self.lc.planes["on_create"].keys():
+            unit = Unit.get_by_id(unit_id)
+            i = 0
+            j = 0
+            unit_groupbox = PlaneGroupBox(unit, True, self.ui.podr_groupbox)
+            unit_lout = QGridLayout()
+            unit_groupbox.setLayout(unit_lout)
+            for plane_id in self.lc.planes["on_create"][unit_id]:
+                plane = Plane.get_by_id(plane_id)
+                i += 1
+                if plane.not_deleted:
+                    btn_plane = PlaneBtn(plane)
+                    btn_plane.setChecked(True)
+                    unit_lout.addWidget(btn_plane, j, i)
+                    if i > 2:
+                        j += 1
+                        i = 0
+            self.ui.unit_layout.addWidget(unit_groupbox)
 
 
 class ExecLC(QDialog):
@@ -76,13 +105,34 @@ class ExecLC(QDialog):
         self.lc = ListControl.get_by_id(lc_id)
         self.resize(600, 250)
         self.setWindowTitle('Отметь выполненные самолеты')
-        self.globalLayout = QVBoxLayout(self)
+        self.globalLayout = QVBoxLayout()
         self.setLayout(self.globalLayout)
         self.unitLayout = QHBoxLayout()
         self.globalLayout.addLayout(self.unitLayout)
+
+        self.btn_layout = QHBoxLayout()
+        self.btn_edit = QPushButton("Изменить")
+        self.btn_delete = QPushButton("Удалить")
+        self.btn_edit.clicked.connect(self.edit)
+        self.btn_delete.clicked.connect(self.delete)
+        self.btn_layout.addWidget(self.btn_edit)
+        self.btn_layout.addWidget(self.btn_delete)
+        self.globalLayout.addLayout(self.btn_layout)
+
         self.unit_fill()
         self.btn_connect()
         self.plane_check()
+
+
+    def edit(self):
+        edit_lc_w = EditLC(self.lc)
+        edit_lc_w.exec()
+        self.accept()
+
+    def delete(self):
+        self.lc.delete()
+        self.accept()
+
 
     def btn_connect(self):
         for btn in self.findChildren(PlaneBtn):
@@ -94,7 +144,6 @@ class ExecLC(QDialog):
         btns = self.findChildren(PlaneBtn)
         for bnt in btns:
             bnt.check_exec(self.lc)
-
 
     def unit_fill(self):
         for unit in self.lc.planes_for_exec.keys():
@@ -118,7 +167,6 @@ class ExecLC(QDialog):
         planes_btn = self.findChildren(PlaneBtn)
         for plane_btn in planes_btn:
             plane_btn.check_exec(self.lc)
-
 
 
 class ExecSpec(QDialog):
@@ -151,7 +199,8 @@ class ExecSpec(QDialog):
                 btn.setStyleSheet("background-color: green")
             layout.addWidget(btn)
 
-    def switch_spec(self, btn, lc_id, plane_id, spec_id):
+    @staticmethod
+    def switch_spec(btn, lc_id, plane_id, spec_id):
         res = ListControlExec.get_or_create(
             lc_id=lc_id,
             plane_id=plane_id,

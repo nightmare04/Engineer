@@ -3,6 +3,8 @@ from operator import truediv
 from PyQt6.QtCore import QSize
 from PyQt6.QtGui import QPalette, QBrush, QColor
 from PyQt6.QtWidgets import QPushButton
+
+from database import PlaneType
 from database.models import Plane, Spec, Unit, ListControlExec
 
 
@@ -16,6 +18,8 @@ class PlaneBtn(QPushButton):
         self.setAcceptDrops(True)
         if self.lc is not None:
             self.check_exec(lc)
+        self.setStyleSheet("PlaneBtn{background-color: red;}"
+                           "PlaneBtn:checked{background-color: green;}")
 
     def check_exec(self, lc):
         specs_for_exec = lc.spec_for_exec
@@ -42,7 +46,9 @@ class SpecBtn(QPushButton):
         self.setText(spec.name)
         self.lc = lc
         self.setFixedSize(QSize(80, 30))
-        self.setCheckable(False)
+        self.setCheckable(True)
+        self.setStyleSheet("SpecBtn{background-color: red;}"
+                           "SpecBtn:checked{background-color: green;}")
 
 
 class UnitBtn(QPushButton):
@@ -50,3 +56,10 @@ class UnitBtn(QPushButton):
         self.unit = unit
         super().__init__(parent)
         self.setText(unit.name)
+
+
+class TypeBtn(QPushButton):
+    def __init__(self, type_plane: PlaneType, parent=None):
+        self.type_plane = type_plane
+        super().__init__(parent)
+        self.setText(type_plane.type)

@@ -2,9 +2,9 @@ from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
 from PyQt6.uic.Compiler.qtproxies import QtCore
 
-from custom_widgets import UnitBtn, PlaneBtn
-from database.models import Plane, Unit, PlaneType
-from windows.adds import AddPlane, AddUnit
+from custom_widgets import UnitBtn, PlaneBtn, TypeBtn, SpecBtn
+from database.models import Plane, Unit, PlaneType, Spec
+from windows.adds import AddPlane, AddUnit, AddType, AddSpec
 from peewee import *
 from functools import partial
 
@@ -79,6 +79,7 @@ class UnitList(Lists):
         self.table.setColumnCount(2)
         self.table.setHorizontalHeaderLabels(["Наименование", ""])
         self.table.resizeColumnsToContents()
+        self.btn_add.clicked.connect(self.add)
         self.fill()
 
     def fill(self):
@@ -103,3 +104,77 @@ class UnitList(Lists):
 
     def edit(self, unit: Unit):
         pass
+
+
+class TypesList(Lists):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Типы самолетов")
+        self.table.setColumnCount(2)
+        self.table.setHorizontalHeaderLabels(["Наименование", ""])
+        self.table.resizeColumnsToContents()
+        self.fill()
+
+    def fill(self):
+        types = PlaneType.select()
+        row_count = types.count()
+        self.table.setRowCount(row_count)
+        i, count = 0, row_count
+        while i < count:
+            for type_plane in types:
+                type_btn = TypeBtn(type_plane)
+                type_btn.setFixedSize(QSize(100, 30))
+                type_btn.setText("Изменить")
+                type_btn.clicked.connect(lambda: self.edit(type_btn.type_plane))
+                self.table.setItem(i, 0, QTableWidgetItem(type_plane.type))
+                self.table.setCellWidget(i, 1, type_btn)
+                i += 1
+
+    def edit(self, type_plane: PlaneType):
+        plane_type_w = AddType()
+        plane_type_w.load(type_plane)
+        plane_type_w.setWindowTitle("Изменить тип")
+        if plane_type_w.exec():
+            self.fill()
+
+    def add(self):
+        plane_type_w = AddType()
+        plane_type_w.setWindowTitle("Добавить тип")
+        if AddType().exec():
+            self.fill()
+
+
+class SpecList(Lists):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Специалтьности")
+        self.table.setColumnCount(2)
+        self.table.setHorizontalHeaderLabels(["Наименование", ""])
+        self.table.resizeColumnsToContents()
+        self.btn_add.clicked.connect(self.add)
+        self.fill()
+
+    def fill(self):
+        specs = Spec.select()
+        row_count = specs.count()
+        self.table.setRowCount(row_count)
+        i, count = 0, row_count
+        while i < count:
+            for spec in specs:
+                spec_btn = SpecBtn(spec)
+                spec_btn.setFixedSize(QSize(100, 30))
+                spec_btn.setText("Изменить")
+                spec_btn.clicked.connect(partial(self.edit, spec_btn.spec)
+                self.table.setItem(i, 0, QTableWidgetItem(spec.name))
+                self.table.setCellWidget(i, 1, spec_btn)
+                i += 1
+
+    def add(self):
+        specadd_w = AddSpec()
+        if specadd_w.exec():
+            self.fill()
+
+    def edit(self, spec: Spec):
+        specadd_w = AddSpec(spec)
+        if specadd_w.exec():
+            self.fill()

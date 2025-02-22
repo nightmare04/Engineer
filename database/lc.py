@@ -1,7 +1,7 @@
 import datetime
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex
-from PyQt6.QtWidgets import QTableView
+from PyQt6.QtWidgets import QTableView, QStyledItemDelegate, QPushButton
 from PyQt6.QtGui import QStandardItem, QStandardItemModel, QColor, QBrush
 from PyQt6.uic.Compiler.qtproxies import QtGui
 
@@ -9,6 +9,7 @@ from database.models import *
 from windows.lc import ExecLC
 from custom_widgets.groupboxs import PlaneGroupBox
 from custom_widgets.buttons import PlaneBtn, SpecBtn
+
 
 class ListControlModel(QAbstractTableModel):
     def __init__(self, select, *args, **kwargs):
@@ -35,7 +36,7 @@ class ListControlModel(QAbstractTableModel):
                         plane_ex = False
                 if not plane_ex:
                     planes_incomplete.append(plane_id)
-        if len(planes_incomplete)==0:
+        if len(planes_incomplete) == 0:
             return "Все выполнено"
         res = "Не выполнено на ВС: "
         for plane_id in planes_incomplete:
@@ -94,8 +95,6 @@ class ListControlModel(QAbstractTableModel):
                 return f'{section+1}'
 
 
-
-
 def fill_lc(tableview: QTableView):
     model = ListControlModel(select=ListControl.select())
     tableview.setModel(model)
@@ -127,25 +126,39 @@ def update_lc(w, lc: ListControl):
 
 
 def dump_spec(w):
-    res = []
+    spec_on_create = []
+    spec_to_exec = []
     specs_btns = w.ui.spec_groupbox.findChildren(SpecBtn)
     for spec_btn in specs_btns:
+        spec_on_create.append(spec_btn.spec.id)
         if spec_btn.isChecked():
-            res.append(spec_btn.spec.id)
+            spec_to_exec.append(spec_btn.spec.id)
+    res = {}
+    res.update({"on_create": spec_on_create})
+    res.update({"to_exec": spec_to_exec})
     return res
 
 
 def dump_plane(w):
+    plane_to_exec = {}
+    plane_on_create = {}
     res = {}
     units_gb = w.ui.podr_groupbox.findChildren(PlaneGroupBox)
     for unit_gb in units_gb:
-        res_plane = []
-        planes = unit_gb.findChildren(PlaneBtn)
-        for plane in planes:
-            if plane.isChecked() and plane.plane_id.not_deleted:
-                res_plane.append(plane.plane_id.id)
-        if res_plane:
-            res.update({unit_gb.unit.id: res_plane})
+        res_to_exec = []
+        res_on_create = []
+        planes_btns = unit_gb.findChildren(PlaneBtn)
+        for plane_btn in planes_btns:
+            res_on_create.append(plane_btn.plane.id)
+            if plane_btn.isChecked():
+                res_to_exec.append(plane_btn.plane.id)
+        if res_to_exec:
+            plane_to_exec.update({unit_gb.unit.id: res_to_exec})
+        plane_on_create.update({unit_gb.unit.id: res_on_create})
+
+    res.update({"on_create": plane_on_create})
+    res.update({"to_exec": plane_to_exec})
+
     return res
 
 
@@ -165,4 +178,3 @@ def load_lc(lc_id):
     lcw = EditLC(lc_id)
     if lcw.exec():
         update_lc(lcw, lcw.lc)
-

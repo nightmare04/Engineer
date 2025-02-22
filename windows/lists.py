@@ -44,7 +44,7 @@ class PlanesList(Lists):
         self.fill()
 
     def fill(self):
-        planes = Plane.select()
+        planes = Plane.select().where(Plane.not_deleted == True)
         row_count = planes.count()
         self.table.setRowCount(row_count)
         i = 0
@@ -84,7 +84,7 @@ class UnitList(Lists):
         self.fill()
 
     def fill(self):
-        units = Unit.select()
+        units = Unit.select().where(Unit.not_deleted == True)
         row_count = units.count()
         self.table.setRowCount(row_count)
         i, count = 0, row_count
@@ -119,7 +119,7 @@ class TypesList(Lists):
         self.fill()
 
     def fill(self):
-        types = PlaneType.select()
+        types = PlaneType.select().where(PlaneType.not_deleted == True)
         row_count = types.count()
         self.table.setRowCount(row_count)
         i, count = 0, row_count
@@ -158,7 +158,7 @@ class SpecList(Lists):
         self.fill()
 
     def fill(self):
-        specs = Spec.select()
+        specs = Spec.select().where(Spec.not_delete == True)
         row_count = specs.count()
         self.table.setRowCount(row_count)
         i, count = 0, row_count

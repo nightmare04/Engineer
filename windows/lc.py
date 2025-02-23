@@ -18,6 +18,8 @@ class AddLC(QDialog):
         self.ui.btn_ok.clicked.connect(self.accept)
         self.ui.btn_cancel.clicked.connect(self.reject)
         self.fill_form()
+        self.ui.tlgDateEdit.setDate(datetime.date.today())
+        self.ui.tlgDeadlineEdit.setDate((datetime.date.today()))
 
     def fill_form(self):
         self.spec_fill()
@@ -70,11 +72,11 @@ class EditLC(QDialog):
         self.unit_fill()
 
     def spec_fill(self):
-        specs_id = self.lc.spec
+        specs_id = self.lc.specs
         for spec_id in specs_id["on_create"]:
             spec = Spec.get_by_id(spec_id)
             spec_btn = SpecBtn(spec)
-            spec_btn.setChecked(True)
+            spec_btn.setChecked(self.check_spec(spec_btn))
             self.ui.spec_layout.addWidget(spec_btn)
 
     def unit_fill(self):
@@ -88,14 +90,33 @@ class EditLC(QDialog):
             for plane_id in self.lc.planes["on_create"][unit_id]:
                 plane = Plane.get_by_id(plane_id)
                 i += 1
-                if plane.not_deleted:
+                if plane.not_delete:
                     btn_plane = PlaneBtn(plane)
-                    btn_plane.setChecked(True)
+                    btn_plane.setChecked(self.check_plane(btn_plane))
                     unit_lout.addWidget(btn_plane, j, i)
                     if i > 2:
                         j += 1
                         i = 0
             self.ui.unit_layout.addWidget(unit_groupbox)
+
+    def check_plane(self, plane_btn:PlaneBtn) -> bool:
+        planes_to_exec = self.lc.planes["to_exec"].values()
+        all_planes = []
+        for planes_unit in planes_to_exec:
+            for plane in planes_unit:
+                all_planes.append(plane)
+
+        for plane in all_planes:
+            if plane == plane_btn.plane.id:
+                return True
+        return False
+
+    def check_spec(self, spec_btn:SpecBtn) -> bool:
+        specs_to_exec = self.lc.specs["to_exec"]
+        for spec in specs_to_exec:
+            if spec == spec_btn.spec.id:
+                return True
+        return False
 
 
 class ExecLC(QDialog):

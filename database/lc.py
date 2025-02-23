@@ -1,12 +1,11 @@
 import datetime
+from functools import partial
 
 from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex
 from PyQt6.QtWidgets import QTableView, QStyledItemDelegate, QPushButton
 from PyQt6.QtGui import QStandardItem, QStandardItemModel, QColor, QBrush
-from PyQt6.uic.Compiler.qtproxies import QtGui
 
 from database.models import *
-from windows.lc import ExecLC
 from custom_widgets.groupboxs import PlaneGroupBox
 from custom_widgets.buttons import PlaneBtn, SpecBtn
 
@@ -24,7 +23,8 @@ class ListControlModel(QAbstractTableModel):
         else:
             return "Осталось " + str(count.days) + " дней"
 
-    def get_not_complete(self, lc: ListControl) -> str:
+    @staticmethod
+    def get_not_complete(lc: ListControl) -> str:
         planes_incomplete = []
         for unit in lc.planes["to_exec"].keys():
             plane_ex = True
@@ -50,7 +50,7 @@ class ListControlModel(QAbstractTableModel):
     def columnCount(self, *args, **kwargs) -> int:
         return 7
 
-    def data(self, index: QModelIndex, role: Qt.ItemDataRole):
+    def data(self, index, role=...):
         if not index.isValid():
             return
         if role == Qt.ItemDataRole.DisplayRole:
@@ -79,7 +79,7 @@ class ListControlModel(QAbstractTableModel):
                 if count.days <= 0:
                     return QBrush(QColor('red'))
 
-    def headerData(self, section: int, orientation: Qt.Orientation, role: Qt.ItemDataRole):
+    def headerData(self, section, orientation, role=...):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return {
@@ -93,13 +93,6 @@ class ListControlModel(QAbstractTableModel):
                 }.get(section)
             else:
                 return f'{section+1}'
-
-
-def fill_lc(tableview: QTableView):
-    model = ListControlModel(select=ListControl.select())
-    tableview.setModel(model)
-    tableview.hideColumn(6)
-    tableview.clicked.connect(lambda index: exec_lc(index.siblingAtColumn(6).data()))
 
 
 def add_lc(w):
@@ -167,11 +160,6 @@ def delta_to_text(timedelta: datetime.timedelta) -> str:
         return "Просрочен на :" + str(timedelta.days) + " дней"
     else:
         return "Осталось " + str(timedelta.days) + " дней"
-
-
-def exec_lc(lc_id):
-    exlcw = ExecLC(lc_id)
-    exlcw.exec()
 
 
 def load_lc(lc_id):

@@ -128,9 +128,8 @@ class ExecLC(QDialog):
         self.accept()
 
     def delete(self):
-        self.lc.delete()
+        self.lc.delete_instance()
         self.accept()
-
 
     def btn_connect(self):
         for btn in self.findChildren(PlaneBtn):

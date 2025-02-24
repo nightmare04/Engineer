@@ -1,7 +1,7 @@
 from operator import truediv
 
-from PyQt6.QtCore import QSize
-from PyQt6.QtGui import QPalette, QBrush, QColor
+from PyQt6.QtCore import QSize, Qt, QMimeData
+from PyQt6.QtGui import QPalette, QBrush, QColor, QDrag, QPixmap
 from PyQt6.QtWidgets import QPushButton
 
 from database import PlaneType
@@ -15,11 +15,22 @@ class PlaneBtn(QPushButton):
         super().__init__(self.plane.bort_num, parent)
         self.setFixedSize(QSize(40, 40))
         self.setCheckable(True)
-        self.setAcceptDrops(True)
         if self.lc is not None:
             self.check_exec(lc)
         self.setStyleSheet("PlaneBtn{background-color: red;}"
                            "PlaneBtn:checked{background-color: green;}")
+
+    def mouseMoveEvent(self, e):
+        if e.buttons() == Qt.MouseButton.LeftButton:
+            drag = QDrag(self)
+            mime = QMimeData()
+            drag.setMimeData(mime)
+
+            pixmap = QPixmap(self.size())
+            self.render(pixmap)
+            drag.setPixmap(pixmap)
+
+            drag.exec(Qt.DropAction.MoveAction)
 
     def check_exec(self, lc):
         specs_for_exec = lc.specs["to_exec"]

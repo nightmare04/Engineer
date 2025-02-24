@@ -3,6 +3,8 @@ from functools import partial
 
 from PyQt6.QtGui import QBrush, QColor
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
+
+from database import add_lc
 from ui import Ui_D_add_lk
 from database.models import *
 from custom_widgets.groupboxs import PlaneGroupBox
@@ -59,17 +61,25 @@ class EditLC(QDialog):
         self.ui.btn_ok.clicked.connect(self.accept)
         self.ui.btn_cancel.clicked.connect(self.reject)
         self.delete_btn = QPushButton("Удалить")
-        self.ui.btn_cancel.parent().layout().addWidget(self.delete_btn)
+        self.ui.horizontalLayout.addWidget(self.delete_btn)
         self.delete_btn.clicked.connect(self.delete_lc)
         self.fill_form()
 
     def delete_lc(self):
-        self.lc.delete()
+        self.lc.delete_instance()
         self.accept()
 
     def fill_form(self):
         self.spec_fill()
         self.unit_fill()
+        self.load_lc()
+
+    def load_lc(self):
+        self.ui.lcEdit.setText(self.lc.lc_number)
+        self.ui.tlgDateEdit.setDate(self.lc.tlg_date)
+        self.ui.tlgDeadlineEdit.setDate(self.lc.tlg_deadline)
+        self.ui.textEdit.setText(self.lc.description)
+        self.ui.tlgEdit.setText(self.lc.tlg)
 
     def spec_fill(self):
         specs_id = self.lc.specs
@@ -99,7 +109,7 @@ class EditLC(QDialog):
                         i = 0
             self.ui.unit_layout.addWidget(unit_groupbox)
 
-    def check_plane(self, plane_btn:PlaneBtn) -> bool:
+    def check_plane(self, plane_btn: PlaneBtn) -> bool:
         planes_to_exec = self.lc.planes["to_exec"].values()
         all_planes = []
         for planes_unit in planes_to_exec:
@@ -111,7 +121,7 @@ class EditLC(QDialog):
                 return True
         return False
 
-    def check_spec(self, spec_btn:SpecBtn) -> bool:
+    def check_spec(self, spec_btn: SpecBtn) -> bool:
         specs_to_exec = self.lc.specs["to_exec"]
         for spec in specs_to_exec:
             if spec == spec_btn.spec.id:
@@ -145,7 +155,8 @@ class ExecLC(QDialog):
 
     def edit(self):
         edit_lc_w = EditLC(self.lc)
-        edit_lc_w.exec()
+        if edit_lc_w.exec():
+            add_lc(edit_lc_w, edit_lc_w.lc)
         self.accept()
 
     def delete(self):

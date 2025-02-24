@@ -95,8 +95,11 @@ class ListControlModel(QAbstractTableModel):
                 return f'{section+1}'
 
 
-def add_lc(w):
-    lc = ListControl()
+def add_lc(w, lc_obj=None):
+    if lc_obj is None:
+        lc = ListControl()
+    else:
+        lc = lc_obj
     lc.tlg = w.ui.tlgEdit.text()
     lc.tlg_date = w.ui.tlgDateEdit.date().toPyDate()
     lc.lc_number = w.ui.lcEdit.text()

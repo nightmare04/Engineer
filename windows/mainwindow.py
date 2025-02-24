@@ -33,7 +33,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.tableView.setModel(model)
         self.ui.tableView.hideColumn(6)
 
-
     def add_lc_w(self):
         lcw = AddLC()
         if lcw.exec():

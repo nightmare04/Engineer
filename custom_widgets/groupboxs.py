@@ -10,3 +10,20 @@ class PlaneGroupBox (QGroupBox):
         if checkable:
             self.setCheckable(True)
         self.setChecked(True)
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, e):
+        e.accept()
+
+    def dragMoveEvent(self, e):
+        plane_btn = e.source()
+        self.layout().removeWidget(plane_btn)
+
+    def dropEvent(self, e):
+        plane_btn = e.source()
+        plane_btn.plane.unit = self.unit.id
+        self.layout().addWidget(plane_btn)
+
+
+
+

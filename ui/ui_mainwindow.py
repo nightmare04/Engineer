@@ -49,16 +49,6 @@ class Ui_MainWindow(object):
         self.lk_page.setObjectName("lk_page")
         self.verticalLayout_2 = QtWidgets.QVBoxLayout(self.lk_page)
         self.verticalLayout_2.setObjectName("verticalLayout_2")
-        self.tableView = QtWidgets.QTableView(parent=self.lk_page)
-        self.tableView.setObjectName("tableView")
-        self.verticalLayout_2.addWidget(self.tableView)
-        self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
-        self.horizontalLayout_2.setObjectName("horizontalLayout_2")
-        self.btn_add_lk = QtWidgets.QPushButton(parent=self.lk_page)
-        self.btn_add_lk.setObjectName("btn_add_lk")
-        self.horizontalLayout_2.addWidget(self.btn_add_lk)
-        self.verticalLayout_2.addLayout(self.horizontalLayout_2)
-        self.verticalLayout_2.setStretch(0, 15)
         self.stackedWidget.addWidget(self.lk_page)
         self.ispr_page = QtWidgets.QWidget()
         self.ispr_page.setObjectName("ispr_page")
@@ -94,7 +84,7 @@ class Ui_MainWindow(object):
         self.menubar.addAction(self.menu.menuAction())
 
         self.retranslateUi(MainWindow)
-        self.stackedWidget.setCurrentIndex(0)
+        self.stackedWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(MainWindow)
 
     def retranslateUi(self, MainWindow):
@@ -104,7 +94,6 @@ class Ui_MainWindow(object):
         self.btn_pki.setText(_translate("MainWindow", "ПКИ"))
         self.btn_ispr.setText(_translate("MainWindow", "Исправность"))
         self.btn_rekl.setText(_translate("MainWindow", "Рекламации"))
-        self.btn_add_lk.setText(_translate("MainWindow", "Добавить"))
         self.menu.setTitle(_translate("MainWindow", "Настройки"))
         self.type_plane_action.setText(_translate("MainWindow", "Типы самолетов"))
         self.planes_action.setText(_translate("MainWindow", "Самолеты"))

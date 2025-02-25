@@ -4,7 +4,8 @@ from functools import partial
 from PyQt6.QtGui import QBrush, QColor
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
 
-from database import add_lc
+from custom_widgets.buttons import TypeBtn
+from database.lc import add_lc
 from ui import Ui_D_add_lk
 from database.models import *
 from custom_widgets.groupboxs import PlaneGroupBox
@@ -19,13 +20,39 @@ class AddLC(QDialog):
         self.setWindowTitle("Добавить Лист контроля")
         self.ui.btn_ok.clicked.connect(self.accept)
         self.ui.btn_cancel.clicked.connect(self.reject)
+
+        self.plane_type_gb = QGroupBox()
+        self.plane_type_gb.setTitle("Типы самолетов")
+        self.plane_type_gb.setLayout(QHBoxLayout())
+
         self.fill_form()
         self.ui.tlgDateEdit.setDate(datetime.date.today())
         self.ui.tlgDeadlineEdit.setDate((datetime.date.today()))
 
     def fill_form(self):
+        if len(PlaneType.select().where(PlaneType.not_delete == True)) > 1:
+            self.type_fill()
         self.spec_fill()
         self.unit_fill()
+
+    def type_fill(self):
+        types = PlaneType.select().where(PlaneType.not_delete == True)
+        for plane_type in types:
+            btn = TypeBtn(plane_type)
+            btn.setCheckable(True)
+            btn.setStyleSheet("TypeBtn{background-color: red;}"
+                               "TypeBtn:checked{background-color: green;}")
+            btn.clicked.connect(partial(self.type_select, btn))
+            self.plane_type_gb.layout().addWidget(btn)
+        self.ui.verticalLayout.insertWidget(0, self.plane_type_gb)
+
+    def type_select(self, type_btn: TypeBtn):
+        planes_btns = self.findChildren(PlaneBtn)
+        for btn in planes_btns:
+            if type_btn.isChecked() and btn.plane.type.id == type_btn.type_plane.id:
+                btn.setChecked(True)
+            else:
+                btn.setChecked(False)
 
     def spec_fill(self):
         specs = Spec.select().where(Spec.not_delete == True)

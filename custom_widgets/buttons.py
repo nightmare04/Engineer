@@ -3,9 +3,7 @@ from operator import truediv
 from PyQt6.QtCore import QSize, Qt, QMimeData
 from PyQt6.QtGui import QPalette, QBrush, QColor, QDrag, QPixmap
 from PyQt6.QtWidgets import QPushButton
-
-from database import PlaneType
-from database.models import Plane, Spec, Unit, ListControlExec
+from database.models import Plane, Spec, Unit, ListControlExec, PlaneType
 
 
 class PlaneBtn(QPushButton):

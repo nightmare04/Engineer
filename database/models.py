@@ -3,7 +3,8 @@ from PyQt6 import QtSql
 from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, JSONField
 
-db = SqliteExtDatabase('./database/pw.db', pragmas={'foreign_keys': 1})
+# db = SqliteExtDatabase('./database/pw.db', pragmas={'foreign_keys': 1})
+db = SqliteExtDatabase('./database/pw.db')
 
 
 class BaseModel(Model):
@@ -66,7 +67,7 @@ class Spec(BaseModel):
 
 
 class ListControlExec(BaseModel):
-    lc_id = ForeignKeyField(ListControl, backref='lcexec')
+    lc_id = ForeignKeyField(ListControl, backref='lcexec', on_delete='cascade')
     plane_id = ForeignKeyField(Plane, backref='lcexec')
     spec_id = ForeignKeyField(Spec, backref='lcexec')
     date = DateField()
@@ -75,11 +76,45 @@ class ListControlExec(BaseModel):
         db_table = 'list_control_execs'
 
 
+class PlaneSystem(BaseModel):
+    planeType = ForeignKeyField(PlaneType)
+    specId = ForeignKeyField(Spec, backref='lcexec')
+    name = CharField(max_length=100, null=False)
+
+    class Meta:
+        db_table = 'plane_systems'
+
+
+class PlaneAgregate(BaseModel):
+    planeSystem = ForeignKeyField(PlaneSystem)
+    name = CharField(max_length=100, null=False)
+
+    class Meta:
+        db_table = 'plane_agregates'
+
+
+class AgregateState(BaseModel):
+    name = CharField(max_length=100, null=False)
+
+    class Meta:
+        db_table = 'agregate_states'
+
+
+class Agregate(BaseModel):
+    planeAgregate = ForeignKeyField(PlaneAgregate)
+    zavNum = CharField(max_length=100, null=True)
+    planeId = ForeignKeyField(Plane)
+    state = ForeignKeyField(AgregateState)
+
+    class Meta:
+        db_table = 'agregates'
+
+
 def create_tables():
     with db:
         db.create_tables(
             [
-                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane
+                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, PlaneAgregate
             ]
         )
 

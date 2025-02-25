@@ -1,7 +1,7 @@
 from PyQt6.QtCore import QSize, Qt
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem
 
-from custom_widgets import UnitBtn, PlaneBtn, TypeBtn, SpecBtn
+from custom_widgets.buttons import UnitBtn, PlaneBtn, TypeBtn, SpecBtn
 from database.models import Plane, Unit, PlaneType, Spec
 from windows.adds import AddPlane, AddUnit, AddType, AddSpec
 from peewee import *

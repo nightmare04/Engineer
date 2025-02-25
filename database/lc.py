@@ -1,98 +1,12 @@
 import datetime
 from functools import partial
 
-from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex
+
 from PyQt6.QtWidgets import QTableView, QStyledItemDelegate, QPushButton
 from PyQt6.QtGui import QStandardItem, QStandardItemModel, QColor, QBrush
-
+from custom_widgets.buttons import PlaneBtn, SpecBtn
 from database.models import *
 from custom_widgets.groupboxs import PlaneGroupBox
-from custom_widgets.buttons import PlaneBtn, SpecBtn
-
-
-class ListControlModel(QAbstractTableModel):
-    def __init__(self, select, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.query = select
-
-    @staticmethod
-    def get_delta(deadline):
-        count = deadline - datetime.date.today()
-        if count.days < 0:
-            return "Просрочен на :" + str(count.days) + " дней"
-        else:
-            return "Осталось " + str(count.days) + " дней"
-
-    @staticmethod
-    def get_not_complete(lc: ListControl) -> str:
-        planes_incomplete = []
-        for unit in lc.planes["to_exec"].keys():
-            plane_ex = True
-            for plane_id in lc.planes["to_exec"][unit]:
-                for spec in lc.specs["to_exec"]:
-                    if ListControlExec.get_or_none(ListControlExec.plane_id == plane_id,
-                                                   ListControlExec.lc_id == lc.id,
-                                                   ListControlExec.spec_id == spec) is None:
-                        plane_ex = False
-                if not plane_ex:
-                    planes_incomplete.append(plane_id)
-        if len(planes_incomplete) == 0:
-            return "Все выполнено"
-        res = "Не выполнено на ВС: "
-        for plane_id in planes_incomplete:
-            res += f'{Plane.get_by_id(plane_id).bort_num}, '
-        res = res[:-2]
-        return res
-
-    def rowCount(self, *args, **kwargs) -> int:
-        return len(self.query)
-
-    def columnCount(self, *args, **kwargs) -> int:
-        return 7
-
-    def data(self, index, role=...):
-        if not index.isValid():
-            return
-        if role == Qt.ItemDataRole.DisplayRole:
-            lc = self.query[index.row()]
-            col = index.column()
-            if col == 0:
-                return f'{lc.lc_number}'
-            elif col == 1:
-                return f'{lc.tlg}'
-            elif col == 2:
-                return f'{lc.tlg_date}'
-            elif col == 3:
-                return f'{self.get_delta(lc.tlg_deadline)}'
-            elif col == 4:
-                return f'{lc.description}'
-            elif col == 5:
-                return self.get_not_complete(lc)
-            elif col == 6:
-                return lc.id
-
-        if role == Qt.ItemDataRole.BackgroundRole:
-            lc = self.query[index.row()]
-            col = index.column()
-            if col == 3:
-                count = lc.tlg_deadline - datetime.date.today()
-                if count.days <= 0:
-                    return QBrush(QColor('red'))
-
-    def headerData(self, section, orientation, role=...):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return {
-                    0: "Номер ЛК",
-                    1: "ТЛГ/Указание",
-                    2: "Дата ТЛГ",
-                    3: "Осталось дней",
-                    4: "Описание",
-                    5: "Не выполнено",
-                    6: "ID"
-                }.get(section)
-            else:
-                return f'{section+1}'
 
 
 def add_lc(w, lc_obj=None):
@@ -156,16 +70,3 @@ def dump_plane(w):
     res.update({"to_exec": plane_to_exec})
 
     return res
-
-
-def delta_to_text(timedelta: datetime.timedelta) -> str:
-    if timedelta.days < 0:
-        return "Просрочен на :" + str(timedelta.days) + " дней"
-    else:
-        return "Осталось " + str(timedelta.days) + " дней"
-
-
-def load_lc(lc_id):
-    lcw = EditLC(lc_id)
-    if lcw.exec():
-        update_lc(lcw, lcw.lc)

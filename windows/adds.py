@@ -4,7 +4,7 @@ from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTab
     QFormLayout, QComboBox, QLineEdit, QCheckBox
 from PyQt6.QtCore import Qt
 
-from database import PlaneType, Plane, Unit, Spec
+from database.models import PlaneType, Plane, Unit, Spec
 
 
 class Adds(QDialog):
@@ -171,7 +171,7 @@ class AddUnit(Adds):
         self.unit_edit = QLineEdit()
         self.reglament = QCheckBox()
         self.formlayout.addRow("&Наименование", self.unit_edit)
-        self.formlayout.addRow("&Регламент", self.reglament)
+        self.formlayout.addRow("&Временное нахождение самолетов", self.reglament)
         if self.unit is not None:
             self.setWindowTitle("Изменить подразделение")
             self.btn_ok.setText("Сохранить")

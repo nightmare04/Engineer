@@ -9,6 +9,7 @@ if __name__ == '__main__':
     app.setStyle('Fusion')
     # app.setWindowIcon(QtGui.QIcon('ui/main.ico'))
     main = MainWindow()
+    main.resize(1000, 700)
     main.show()
 
     sys.exit(app.exec())

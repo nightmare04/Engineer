@@ -3,14 +3,14 @@ from PyQt6 import QtWidgets, QtGui
 from PyQt6.QtCore import QSortFilterProxyModel, QRegularExpression, Qt
 from PyQt6.QtWidgets import QGroupBox, QPushButton, QVBoxLayout, QHBoxLayout, QComboBox
 
-from custom_widgets.tables import LCTableView, PlaneTableView, UnitTableView, PlaneTypeTableView, SpecTableView
+from custom_widgets.tables import LCTableView, PlaneTableView
 from custom_widgets.combobox import PlaneFilterComboBox
 from ui import Ui_MainWindow
 from database.lc import create_tables, add_lc
-from database.models import ListControl, Plane, PlaneType, Unit, Spec
-from windows.adds import AddType, AddPlane, AddUnit, AddSpec
+from database.models import ListControl, Plane, PlaneType, Unit, Spec, OsobPlane
+from windows.adds import AddType, AddPlane, AddUnit, AddSpec, AddOsob
 from windows.lc import AddLC, ExecLC
-from windows.lists import OsobList, Lists
+from windows.lists import Lists
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -23,7 +23,6 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.stackedWidget.setCurrentWidget(self.ui.lk_page)
         self.lc_table = LCTableView()
-        self.ui.lk_page.setLayout(QVBoxLayout())
         self.ui.lk_page.layout().addWidget(self.lc_table)
 
         self.filter_layout = QHBoxLayout()
@@ -54,13 +53,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.btn_ispr.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.ispr_page))
         self.ui.btn_rekl.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.rekl_page))
         self.ui.planes_action.triggered.connect(self.plane_list)
-        self.ui.units_action.triggered.connect(lambda: Lists("Подразделения", UnitTableView, Unit, AddUnit).exec())
-        self.ui.type_plane_action.triggered.connect(lambda: Lists("Типы самолетов", PlaneTypeTableView, PlaneType, AddType).exec())
-        self.ui.spec_action.triggered.connect(lambda: Lists("Специальности",SpecTableView, Spec, AddSpec).exec())
-        self.ui.osob_plane_action.triggered.connect(lambda: OsobList().exec())
+        self.ui.units_action.triggered.connect(lambda: Lists("Подразделения", ["Подразделение", ""], Unit, AddUnit).exec())
+        self.ui.type_plane_action.triggered.connect(lambda: Lists("Типы самолетов", ["Тип",""], PlaneType, AddType).exec())
+        self.ui.spec_action.triggered.connect(lambda: Lists("Специальности", ["Специальность",""], Spec, AddSpec).exec())
+        self.ui.osob_plane_action.triggered.connect(lambda: Lists("Особенности",["Особенность",""], OsobPlane, AddOsob).exec())
 
     def plane_list(self):
-        Lists(PlaneTableView, Plane, AddPlane).exec()
+        Lists("Самолеты", PlaneTableView, Plane, AddPlane).exec()
         self.plane_combo.model.updateData(Plane.select().where(Plane.not_delete == True))
 
     def set_filter_by_combo(self, index):

@@ -7,10 +7,12 @@ from database.models import ListControl, ListControlExec, Plane, PlaneType, Unit
 import datetime
 
 
-class MyTableModel(QAbstractTableModel):
-    def __init__(self, query, *args, **kwargs):
+class AllTableModel(QAbstractTableModel):
+    def __init__(self, basemodel, header, query, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._dataset = query
+        self.basemodel = basemodel
+        self._dataset = basemodel.select().where(basemodel.not_delete == True)
+        self.header = header
 
     def columnCount(self, parent=...):
         return 2
@@ -29,10 +31,27 @@ class MyTableModel(QAbstractTableModel):
             elif col == 1:
                 return f'{data.id}'
 
-    def updateData(self, query):
+    def headerData(self, section, orientation, role=...):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return self.header[section]
+            elif orientation == Qt.Orientation.Vertical:
+                return f'{section + 1}'
+
+    def updateData(self):
         self.beginResetModel()
-        self._dataset = query
+        self._dataset = self.basemodel.select().where(self.basemodel.not_delete == True)
         self.endResetModel()
+
+
+class AllTableView(QTableView):
+    def __init__(self, header, basemodel, parent=None):
+        super().__init__(parent)
+        self.query = basemodel.select().where(basemodel.not_delete == True)
+        self.model = AllTableModel(basemodel=basemodel, header=header, query=self.query)
+        self.setModel(self.model)
+        self.hideColumn(1)
+        self.verticalHeader().setDefaultSectionSize(30)
 
 
 class ListControlModel(QAbstractTableModel):
@@ -234,7 +253,7 @@ class PlaneTableView(QTableView):
         self.verticalHeader().setDefaultSectionSize(30)
 
 
-class PlaneTypeTableModel(MyTableModel):
+class PlaneTypeTableModel(AllTableModel):
     def __init__(self, query, *args, **kwargs):
         super().__init__(query, *args, **kwargs)
 
@@ -245,111 +264,5 @@ class PlaneTypeTableModel(MyTableModel):
                     0: "Тип самолета",
                     1: "ID"
                 }.get(section)
-            else:
+            elif orientation == Qt.Orientation.Vertical:
                 return f'{section + 1}'
-
-
-class PlaneTypeTableView(QTableView):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.query = PlaneType.select().where(PlaneType.not_delete == True)
-        self.model = PlaneTypeTableModel(query=self.query)
-        self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.model)
-        self.setModel(self.proxy_model)
-        self.hideColumn(1)
-        self.verticalHeader().setDefaultSectionSize(30)
-
-
-class UnitTableModel(MyTableModel):
-    def __init__(self, query, *args, **kwargs):
-        super().__init__(query, *args, **kwargs)
-
-    def headerData(self, section, orientation, role=...):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return {
-                    0: "Подразделение",
-                    1: "ID"
-                }.get(section)
-            else:
-                return f'{section + 1}'
-
-
-class UnitTableView(QTableView):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.query = Unit.select().where(Unit.not_delete == True)
-        self.model = UnitTableModel(query=self.query)
-        self.setModel(self.model)
-        self.hideColumn(1)
-        self.verticalHeader().setDefaultSectionSize(30)
-
-
-class OsobTableModel(MyTableModel):
-    def __init__(self, query, *args, **kwargs):
-        super().__init__(query, *args, **kwargs)
-
-    def columnCount(self, parent=...):
-        return 3
-
-    def data(self, index, role=...):
-        if not index.isValid():
-            return
-        if role == Qt.ItemDataRole.DisplayRole:
-            data = self._dataset[index.row()]
-            col = index.column()
-            if col == 0:
-                return f'{data.name}'
-            elif col == 1:
-                return f'{data.planeType.name}'
-            elif col == 2:
-                return f'{data.id}'
-
-    def headerData(self, section, orientation, role=...):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return {
-                    0: "Особенность",
-                    1: "Тип самолета",
-                    2: "ID"
-                }.get(section)
-            else:
-                return f'{section + 1}'
-
-
-class OsobTableView(QTableView):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.query = OsobPlane.select().where(OsobPlane.not_delete == True)
-        self.model = OsobTableModel(query=self.query)
-        self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.model)
-        self.setModel(self.proxy_model)
-        self.hideColumn(2)
-        self.verticalHeader().setDefaultSectionSize(30)
-
-
-class SpecTableModel(MyTableModel):
-    def __init__(self, query, *args, **kwargs):
-        super().__init__(query, *args, **kwargs)
-
-    def headerData(self, section, orientation, role=...):
-        if role == Qt.ItemDataRole.DisplayRole:
-            if orientation == Qt.Orientation.Horizontal:
-                return {
-                    0: "Специальность",
-                    1: "ID"
-                }.get(section)
-            else:
-                return f'{section + 1}'
-
-
-class SpecTableView(QTableView):
-    def __init__(self, parent=None):
-        super().__init__(parent)
-        self.query = Spec.select().where(Spec.not_delete == True)
-        self.model = SpecTableModel(query=self.query)
-        self.setModel(self.model)
-        self.hideColumn(1)
-        self.verticalHeader().setDefaultSectionSize(30)

@@ -3,14 +3,14 @@ from operator import truediv
 from PyQt6.QtCore import QSize, Qt, QMimeData
 from PyQt6.QtGui import QPalette, QBrush, QColor, QDrag, QPixmap
 from PyQt6.QtWidgets import QPushButton
-from database.models import Plane, Spec, Unit, ListControlExec, PlaneType
+from database.models import Plane, Spec, Unit, ListControlExec, PlaneType, OsobPlane
 
 
 class PlaneBtn(QPushButton):
     def __init__(self, plane: Plane, lc=None, parent=None):
         self.plane = plane
         self.lc = lc
-        super().__init__(self.plane.bort_num, parent)
+        super().__init__(self.plane.bortNum, parent)
         self.setFixedSize(QSize(40, 40))
         self.setCheckable(True)
         if self.lc is not None:
@@ -33,9 +33,9 @@ class PlaneBtn(QPushButton):
     def check_exec(self, lc):
         specs_for_exec = lc.specs["to_exec"]
         exec_specs = (ListControlExec
-                      .select(ListControlExec.spec_id)
-                      .where(ListControlExec.lc_id == lc.id,
-                             ListControlExec.plane_id == self.plane.id).order_by(+ListControlExec.spec_id).tuples())
+                      .select(ListControlExec.specId)
+                      .where(ListControlExec.lcId == lc.id,
+                             ListControlExec.planeId == self.plane.id).order_by(+ListControlExec.specId).tuples())
         spec_exec = []
         if len(exec_specs) == 0:
             self.setStyleSheet("background-color: red")
@@ -76,3 +76,12 @@ class TypeBtn(QPushButton):
         self.type_plane = type_plane
         super().__init__(parent)
         self.setText(type_plane.type)
+
+
+class OsobBtn(QPushButton):
+    def __init__(self, osob_plane: OsobPlane, parent=None):
+        super().__init__(parent)
+        self.osob_plane = osob_plane
+        self.setText(osob_plane.name)
+        self.setCheckable(True)
+        self.setStyleSheet("OsobBtn:checked{background-color: green;}")

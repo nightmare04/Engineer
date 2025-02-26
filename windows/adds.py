@@ -1,10 +1,12 @@
 from functools import partial
 
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
-    QFormLayout, QComboBox, QLineEdit, QCheckBox
+    QFormLayout, QComboBox, QLineEdit, QCheckBox, QDateEdit
 from PyQt6.QtCore import Qt
 
-from database.models import PlaneType, Plane, Unit, Spec
+from custom_widgets.combobox import TypePlaneComboBox, UnitComboBox, RemZavComboBox, VypZavComboBox
+from custom_widgets.groupboxs import OsobGroupBox
+from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, VypZav, OsobPlane
 
 
 class Adds(QDialog):
@@ -43,21 +45,27 @@ class AddPlane(Adds):
         self.plane = plane
         self.setWindowTitle("Добавить самолет")
 
-        self.type_combobox = QComboBox()
-        self.zav_num = QLineEdit()
-        self.bort_num = QLineEdit()
-        self.unit_combobox = QComboBox()
+        self.type_combobox = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.zavNum = QLineEdit()
+        self.bortNum = QLineEdit()
+        self.dateVyp = QDateEdit()
+        self.dateRem = QDateEdit()
+        self.remType = QLineEdit()
+        self.remZav = RemZavComboBox(RemZav.select())
+        self.vypZav = VypZavComboBox(VypZav.select())
+        self.unit_combobox = UnitComboBox(Unit.select().where(Unit.not_delete == True))
+        self.osobPlane = OsobGroupBox()
 
-        self.formlayout.addRow("&Тип самолета", self.type_combobox)
-        self.formlayout.addRow("&Заводской номер", self.zav_num)
-        self.formlayout.addRow("&Бортовой номер", self.bort_num)
-        self.formlayout.addRow("&Подразделение", self.unit_combobox)
-
-        for unit in Unit.select().where(Unit.not_delete == True):
-            self.unit_combobox.addItem(unit.name, unit.id)
-
-        for type_plane in PlaneType.select().where(PlaneType.not_delete == True):
-            self.type_combobox.addItem(type_plane.type, type_plane.id)
+        self.formlayout.addRow("Тип самолета", self.type_combobox)
+        self.formlayout.addRow("Подразделение", self.unit_combobox)
+        self.formlayout.addRow("Бортовой номер", self.bortNum)
+        self.formlayout.addRow("Заводской номер", self.zavNum)
+        self.formlayout.addRow("Дата выпуска", self.dateVyp)
+        self.formlayout.addRow("Завод изготовитель", self.vypZav)
+        self.formlayout.addRow("Дата ремонта", self.dateRem)
+        self.formlayout.addRow("АРЗ", self.remZav)
+        self.formlayout.addRow("Вид ремонта", self.remType)
+        self.formlayout.addRow("Особенности самолета", self.osobPlane)
 
         if self.plane is not None:
             self.setWindowTitle("Изменить самолет")
@@ -72,27 +80,31 @@ class AddPlane(Adds):
 
     def add(self):
         plane = Plane()
-        plane.bort_num = self.bort_num.text()
-        plane.zav_num = self.zav_num.text()
+        plane.bortNum = self.bortNum.text()
+        plane.zavNum = self.zavNum.text()
         plane.unit = self.unit_combobox.currentData()
-        plane.type = self.type_combobox.currentData()
+        plane.planeType = self.type_combobox.currentData()
         plane.save()
-        self.accept()
+        self.clean()
+
+    def clean(self):
+        self.bortNum.setText("")
+        self.zavNum.setText("")
 
     def load(self):
-        self.bort_num.setText(self.plane.bort_num)
-        self.zav_num.setText(self.plane.zav_num)
-        self.type_combobox.setCurrentIndex(self.type_combobox.findData(str(self.plane.type)))
+        self.bortNum.setText(self.plane.bortNum)
+        self.zavNum.setText(self.plane.zavNum)
+        self.type_combobox.setCurrentIndex(self.type_combobox.findData(str(self.plane.planeType)))
         self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(self.plane.unit)))
         self.btn_ok.setText("Сохранить")
         self.btn_ok.clicked.disconnect()
         self.btn_ok.clicked.connect(self.update_plane)
 
     def update_plane(self):
-        self.plane.bort_num = self.bort_num.text()
-        self.plane.zav_num = self.zav_num.text()
+        self.plane.bortNum = self.bortNum.text()
+        self.plane.zavNum = self.zavNum.text()
         self.plane.unit = self.unit_combobox.currentData()
-        self.plane.type = self.type_combobox.currentData()
+        self.plane.planeType = self.type_combobox.currentData()
         self.plane.save()
         self.accept()
 
@@ -117,7 +129,7 @@ class AddType(Adds):
 
     def add(self):
         planetype = PlaneType()
-        planetype.type = self.type_plane_edit.text()
+        planetype.name = self.type_plane_edit.text()
         planetype.save()
         self.accept()
 
@@ -200,3 +212,39 @@ class AddUnit(Adds):
         self.unit_edit.setText(self.unit.name)
         if self.unit.reglament:
             self.reglament.setCheckState(Qt.CheckState.Checked)
+
+
+class AddOsob(Adds):
+    def __init__(self, osob: OsobPlane = None, parent=None):
+        super().__init__(parent)
+        self.osob = osob
+        self.setWindowTitle("Добавить особенность")
+        self.osob_edit = QLineEdit()
+        self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.formlayout.addRow("Тип самолета", self.plane_type)
+        self.formlayout.addRow("&Наименование", self.osob_edit)
+        if self.osob is not None:
+            self.setWindowTitle("Изменить")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(partial(self.delete, self.osob))
+
+    def add(self):
+        osob = OsobPlane()
+        osob.name = self.osob_edit.text()
+        osob.planeType = self.plane_type.currentData(role=Qt.ItemDataRole.UserRole)
+        osob.save()
+        self.accept()
+
+    def load(self):
+        self.osob_edit.setText(self.osob.name)
+
+    def save(self):
+        self.osob.name = self.osob_edit.text()
+        self.osob.save()
+        self.accept()

@@ -77,7 +77,7 @@
       </property>
       <widget class="QWidget" name="pki_page"/>
       <widget class="QWidget" name="lk_page">
-       <layout class="QVBoxLayout" name="verticalLayout_2" stretch=""/>
+       <layout class="QVBoxLayout" name="verticalLayout_2"/>
       </widget>
       <widget class="QWidget" name="ispr_page"/>
       <widget class="QWidget" name="rekl_page"/>
@@ -98,10 +98,12 @@
     <property name="title">
      <string>Настройки</string>
     </property>
-    <addaction name="type_plane_action"/>
-    <addaction name="planes_action"/>
-    <addaction name="spec_action"/>
     <addaction name="units_action"/>
+    <addaction name="spec_action"/>
+    <addaction name="type_plane_action"/>
+    <addaction name="osob_plane_action"/>
+    <addaction name="rem_zav_action"/>
+    <addaction name="planes_action"/>
    </widget>
    <addaction name="menu"/>
   </widget>
@@ -124,6 +126,16 @@
   <action name="units_action">
    <property name="text">
     <string>Подразделения</string>
+   </property>
+  </action>
+  <action name="osob_plane_action">
+   <property name="text">
+    <string>Особенности самолетов</string>
+   </property>
+  </action>
+  <action name="rem_zav_action">
+   <property name="text">
+    <string>Ремонтные заводы</string>
    </property>
   </action>
  </widget>

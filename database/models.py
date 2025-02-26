@@ -4,7 +4,7 @@ from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, JSONField
 
 # db = SqliteExtDatabase('./database/pw.db', pragmas={'foreign_keys': 1})
-db = SqliteExtDatabase('./database/pw.db')
+db = SqliteExtDatabase('./database/pw.db', pragmas={'foreign_keys': 1})
 
 
 class BaseModel(Model):
@@ -16,22 +16,21 @@ class BaseModel(Model):
 
 class ListControl(BaseModel):
     tlg = CharField(max_length=100, null=False)
-    tlg_date = DateField()
-    tlg_deadline = DateField()
+    tlgDate = DateField()
+    tlgDeadline = DateField()
     description = TextField(null=True)
-    lc_number = CharField(max_length=10, null=True)
+    lcNumber = CharField(max_length=10, null=True)
     answer = CharField(max_length=100, null=True)
-    answer_date = DateField(null=True)
+    answerDate = DateField(null=True)
     specs = JSONField()
     planes = JSONField()
-    complete_flag = BooleanField(default=False)
 
     class Meta:
         db_table = 'list_controls'
 
 
 class PlaneType(BaseModel):
-    type = CharField(max_length=30, null=False)
+    name = CharField(max_length=30, null=False)
     not_delete = BooleanField(default=True)
 
     class Meta:
@@ -47,15 +46,51 @@ class Unit(BaseModel):
         db_table = 'units'
 
 
+class RemZav(BaseModel):
+    name = CharField(max_length=30, null=False)
+
+    class Meta:
+        db_table = 'rem_zav'
+
+
+class VypZav(BaseModel):
+    name = CharField(max_length=30, null=False)
+
+    class Meta:
+        db_table = 'vyp_zav'
+
+
 class Plane(BaseModel):
-    type = ForeignKeyField(PlaneType, backref='planes')
-    zav_num = CharField(max_length=30, null=False)
-    bort_num = CharField(max_length=10, null=False)
+    planeType = ForeignKeyField(PlaneType, backref='planes')
+    zavNum = CharField(max_length=30, null=False)
+    bortNum = CharField(max_length=10, null=False)
+    dateVyp = DateField()
+    dateRem = DateField()
+    remType = CharField(max_length=30, null=False)
+    remZav = ForeignKeyField(RemZav)
+    vypZav = ForeignKeyField(VypZav)
+    osobPlane = JSONField()
     unit = ForeignKeyField(Unit, backref='planes')
     not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'planes'
+
+
+class RemType(BaseModel):
+    name = CharField(max_length=30, null=False)
+
+    class Meta:
+        db_table = 'rem_type'
+
+
+class OsobPlane(BaseModel):
+    planeType = ForeignKeyField(PlaneType)
+    name = CharField(max_length=30, null=False)
+    not_delete = BooleanField(default=True)
+
+    class Meta:
+        db_table = 'osob_plane'
 
 
 class Spec(BaseModel):
@@ -67,9 +102,9 @@ class Spec(BaseModel):
 
 
 class ListControlExec(BaseModel):
-    lc_id = ForeignKeyField(ListControl, backref='lcexec', on_delete='cascade')
-    plane_id = ForeignKeyField(Plane, backref='lcexec')
-    spec_id = ForeignKeyField(Spec, backref='lcexec')
+    lcId = ForeignKeyField(ListControl, backref='lcexec', on_delete='cascade')
+    planeId = ForeignKeyField(Plane, backref='lcexec')
+    specId = ForeignKeyField(Spec, backref='lcexec')
     date = DateField()
 
     class Meta:
@@ -103,6 +138,7 @@ class AgregateState(BaseModel):
 class Agregate(BaseModel):
     planeAgregate = ForeignKeyField(PlaneAgregate)
     zavNum = CharField(max_length=100, null=True)
+    dateVyp = DateField
     planeId = ForeignKeyField(Plane)
     state = ForeignKeyField(AgregateState)
 
@@ -114,8 +150,7 @@ def create_tables():
     with db:
         db.create_tables(
             [
-                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, PlaneAgregate
+                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, PlaneAgregate,
+                Agregate, OsobPlane, AgregateState, RemZav, RemType, VypZav
             ]
         )
-
-

@@ -15,22 +15,22 @@ def add_lc(w, lc_obj=None):
     else:
         lc = lc_obj
     lc.tlg = w.ui.tlgEdit.text()
-    lc.tlg_date = w.ui.tlgDateEdit.date().toPyDate()
-    lc.lc_number = w.ui.lcEdit.text()
+    lc.tlgDate = w.ui.tlgDateEdit.date().toPyDate()
+    lc.lcNumber = w.ui.lcEdit.text()
     lc.planes = dump_plane(w)
     lc.specs = dump_spec(w)
-    lc.tlg_deadline = w.ui.tlgDeadlineEdit.date().toPyDate()
+    lc.tlgDeadline = w.ui.tlgDeadlineEdit.date().toPyDate()
     lc.description = w.ui.textEdit.toPlainText()
     lc.save()
 
 
 def update_lc(w, lc: ListControl):
     lc.tlg = w.ui.tlgEdit.text()
-    lc.tlg_date = w.ui.tlgDateEdit.date().toPyDate()
-    lc.lc_number = w.ui.lcEdit.text()
+    lc.tlgDate = w.ui.tlgDateEdit.date().toPyDate()
+    lc.lcNumber = w.ui.lcEdit.text()
     lc.planes = self.dump_plane(w)
     lc.spec = self.dump_spec(w)
-    lc.tlg_deadline = w.ui.tlgDeadlineEdit.date().toPyDate()
+    lc.tlgDeadline = w.ui.tlgDeadlineEdit.date().toPyDate()
     lc.description = w.ui.textEdit.toPlainText()
     lc.update()
 

@@ -3,31 +3,79 @@ from PyQt6.QtCore import QAbstractListModel, Qt
 from database.models import Plane
 
 
-class PlaneComboModel(QAbstractListModel):
-    def __init__(self, *args, **kwargs):
+class MyComboModel(QAbstractListModel):
+    def __init__(self, query, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.query = Plane.select().where(Plane.not_delete == True)
+        self._query = query
 
     def rowCount(self, parent=...):
-        return len(self.query)
+        return len(self._query)
+
+    def updateData(self, query):
+        self.beginResetModel()
+        self._query = query
+        self.endResetModel()
 
     def data(self, index, role=...):
         if not index.isValid():
             return
 
+        if role == Qt.ItemDataRole.DisplayRole:
+            return self._query[index.row() - 1].name
+
+        if role == Qt.ItemDataRole.UserRole:
+            return self._query[index.row() - 1].id
+
+
+class PlaneFilterComboModel(MyComboModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
         if index.row() == 0:
             if role == Qt.ItemDataRole.DisplayRole:
                 return 'Все'
 
         if role == Qt.ItemDataRole.DisplayRole:
-            return self.query[index.row()-1].bort_num
+            return self._query[index.row() - 1].bortNum
 
         if role == Qt.ItemDataRole.UserRole:
-            return self.query[index.row()-1].id
+            return self._query[index.row() - 1].id
 
 
-class PlaneComboBox(QComboBox):
-    def __init__(self, parent=None):
+class MyComboBox(QComboBox):
+    def __init__(self, query, parent=None):
         super().__init__(parent)
-        self.model = PlaneComboModel()
+        self.model = MyComboModel(query)
         self.setModel(self.model)
+
+
+class PlaneFilterComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+
+class TypePlaneComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+
+class UnitComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+class RemZavComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+
+class RemTypeComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+
+class VypZavComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)

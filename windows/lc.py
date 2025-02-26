@@ -49,7 +49,7 @@ class AddLC(QDialog):
     def type_select(self, type_btn: TypeBtn):
         planes_btns = self.findChildren(PlaneBtn)
         for btn in planes_btns:
-            if type_btn.isChecked() and btn.plane.type.id == type_btn.type_plane.id:
+            if type_btn.isChecked() and btn.plane.planeType.id == type_btn.type_plane.id:
                 btn.setChecked(True)
             else:
                 btn.setChecked(False)
@@ -102,9 +102,9 @@ class EditLC(QDialog):
         self.load_lc()
 
     def load_lc(self):
-        self.ui.lcEdit.setText(self.lc.lc_number)
-        self.ui.tlgDateEdit.setDate(self.lc.tlg_date)
-        self.ui.tlgDeadlineEdit.setDate(self.lc.tlg_deadline)
+        self.ui.lcEdit.setText(self.lc.lcNumber)
+        self.ui.tlgDateEdit.setDate(self.lc.tlgDate)
+        self.ui.tlgDeadlineEdit.setDate(self.lc.tlgDeadline)
         self.ui.textEdit.setText(self.lc.description)
         self.ui.tlgEdit.setText(self.lc.tlg)
 

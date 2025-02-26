@@ -3,7 +3,7 @@ from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyM
 from PyQt6.QtGui import QBrush, QColor
 from peewee import reraise
 
-from database.models import ListControl, ListControlExec, Plane, PlaneType, Unit, OsobPlane
+from database.models import ListControl, ListControlExec, Plane, PlaneType, Unit, OsobPlane, Spec
 import datetime
 
 
@@ -13,7 +13,7 @@ class MyTableModel(QAbstractTableModel):
         self._dataset = query
 
     def columnCount(self, parent=...):
-        return 1
+        return 2
 
     def rowCount(self, parent=...):
         return len(self._dataset)
@@ -281,9 +281,7 @@ class UnitTableView(QTableView):
         super().__init__(parent)
         self.query = Unit.select().where(Unit.not_delete == True)
         self.model = UnitTableModel(query=self.query)
-        self.proxy_model = QSortFilterProxyModel()
-        self.proxy_model.setSourceModel(self.model)
-        self.setModel(self.proxy_model)
+        self.setModel(self.model)
         self.hideColumn(1)
         self.verticalHeader().setDefaultSectionSize(30)
 
@@ -329,4 +327,29 @@ class OsobTableView(QTableView):
         self.proxy_model.setSourceModel(self.model)
         self.setModel(self.proxy_model)
         self.hideColumn(2)
+        self.verticalHeader().setDefaultSectionSize(30)
+
+
+class SpecTableModel(MyTableModel):
+    def __init__(self, query, *args, **kwargs):
+        super().__init__(query, *args, **kwargs)
+
+    def headerData(self, section, orientation, role=...):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "Специальность",
+                    1: "ID"
+                }.get(section)
+            else:
+                return f'{section + 1}'
+
+
+class SpecTableView(QTableView):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.query = Spec.select().where(Spec.not_delete == True)
+        self.model = SpecTableModel(query=self.query)
+        self.setModel(self.model)
+        self.hideColumn(1)
         self.verticalHeader().setDefaultSectionSize(30)

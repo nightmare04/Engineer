@@ -2,6 +2,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QRect
 from PyQt6.QtWidgets import QWidget, QMainWindow, QMenu, QHBoxLayout, QStackedWidget, QFrame, QMenuBar
 
+from windows.ispravnost import Ispravnost
 from windows.lc import MainLCW
 from windows.leftdock import *
 from windows.lists import Lists
@@ -69,8 +70,13 @@ class MainWindow(QMainWindow):
 
         self.stack = QStackedWidget()
         self.lcWidget = MainLCW()
+        self.isprWidget = Ispravnost()
         self.stack.addWidget(self.lcWidget)
+        self.stack.addWidget(self.isprWidget)
         self.mainLayout.addWidget(self.stack)
+
+        self.leftDock.btnLC.clicked.connect(lambda: self.stack.setCurrentWidget(self.lcWidget))
+        self.leftDock.btnIspr.clicked.connect(lambda: self.stack.setCurrentWidget(self.isprWidget))
 
     @staticmethod
     def open_units():

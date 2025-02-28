@@ -210,3 +210,11 @@ class AddOsob(Adds):
         self.osob.name = self.osob_edit.text()
         self.osob.save()
         self.accept()
+
+
+class AddPlaneSystem(Adds):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.planeSystem = PlaneSystem()
+        self.formlayout.addRow()
+

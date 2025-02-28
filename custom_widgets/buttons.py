@@ -3,7 +3,7 @@ from operator import truediv
 from PyQt6.QtCore import QSize, Qt, QMimeData
 from PyQt6.QtGui import QPalette, QBrush, QColor, QDrag, QPixmap
 from PyQt6.QtWidgets import QPushButton
-from database.models import Plane, Spec, Unit, ListControlExec, PlaneType, OsobPlane
+from database.models import Plane, Spec, Unit, ListControlExec, PlaneType, OsobPlane, AgregateOnPlane
 
 
 class PlaneBtn(QPushButton):
@@ -21,6 +21,14 @@ class PlaneBtn(QPushButton):
             self.check_exec(lc)
         self.setStyleSheet("PlaneBtn{background-color: red;}"
                            "PlaneBtn:checked{background-color: green;}")
+
+    def check_ispr(self):
+        if len(AgregateOnPlane.select().where(self.plane.id == AgregateOnPlane.planeId, AgregateOnPlane.state > 1)) == 0:
+            self.setStyleSheet("background-color: red")
+        else:
+            self.setStyleSheet("background-color: green")
+
+
 
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.MouseButton.LeftButton:

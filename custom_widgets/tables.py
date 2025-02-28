@@ -2,9 +2,10 @@ from PyQt6.QtWidgets import QTableView
 from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyModel
 from PyQt6.QtGui import QBrush, QColor
 from peewee import reraise
+from playhouse.sqlite_udf import aggregate
 
 from database.models import ListControl, ListControlExec, Plane, PlaneType, Unit, OsobPlane, Spec, RemType, RemZav, \
-    VypZav
+    VypZav, AgregateOnPlane, PlaneAgregate, PlaneSystem
 import datetime
 
 
@@ -279,3 +280,55 @@ class PlaneTypeTableModel(AllTableModel):
                 }.get(section)
             elif orientation == Qt.Orientation.Vertical:
                 return f'{section + 1}'
+
+
+class IspravnostPlaneTableModel(QAbstractTableModel):
+    def __init__(self, plane: Plane, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.plane = plane
+        self._dataset = AgregateOnPlane.select().where(AgregateOnPlane.planeId == self.plane.id)
+
+    def rowCount(self, parent=...):
+        return len(AgregateOnPlane.select().where(AgregateOnPlane.planeId == self.plane.id))
+
+    def columnCount(self, parent=...):
+        return 6
+
+    def headerData(self, section, orientation, role = ...):
+        if orientation == Qt.Orientation.Horizontal:
+            return ["ID", "Специальность", "Система", "Агрегат/Блок", "Заводской номер", "Состояние"]
+        elif orientation == Qt.Orientation.Vertical:
+            return section + 1
+
+    def data(self, index, role = ...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            agregate = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return agregate.id
+            elif col == 1:
+                return agregate.planeAgregate.planeSystem.specId.name
+            elif col == 2:
+                return agregate.planeAgregate.planeSystem.name
+            elif col == 3:
+                return agregate.planeAgregate.name
+            elif col == 4:
+                return agregate.zavNum
+            elif col == 5:
+                return agregate.state.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = AgregateOnPlane.select().where(AgregateOnPlane.planeId == self.plane.id)
+        self.endResetModel()
+
+
+class IspravnostPlaneTableView(QTableView):
+    def __init__(self, plane, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = IspravnostPlaneTableModel(plane)
+        self.setModel(self.model)
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)

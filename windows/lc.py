@@ -7,7 +7,7 @@ from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QD
 from custom_widgets.buttons import TypeBtn
 from database.lc import add_lc
 from database.models import *
-from custom_widgets.groupboxs import PlaneGroupBox
+from custom_widgets.groupboxs import UnitPlaneGroupBox
 from custom_widgets.buttons import SpecBtn, PlaneBtn
 from custom_widgets.tables import *
 from custom_widgets.combobox import *
@@ -131,7 +131,7 @@ class AddLC(QDialog):
         for unit in Unit.select().where(Unit.not_delete == True):
             i = 0
             j = 0
-            unit_groupbox = PlaneGroupBox(unit, True, self.ui.podr_groupbox)
+            unit_groupbox = UnitPlaneGroupBox(unit, True, self.ui.podr_groupbox)
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
             for plane in Plane.select().join(Unit).where(Plane.unit == unit.id, Plane.not_delete == True):
@@ -188,7 +188,7 @@ class EditLC(QDialog):
             unit = Unit.get_by_id(unit_id)
             i = 0
             j = 0
-            unit_groupbox = PlaneGroupBox(unit, True, self.ui.podr_groupbox)
+            unit_groupbox = UnitPlaneGroupBox(unit, True, self.ui.podr_groupbox)
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
             for plane_id in self.lc.planes["on_create"][unit_id]:
@@ -271,7 +271,7 @@ class ExecLC(QDialog):
     def unit_fill(self):
         for unit in self.lc.planes["to_exec"].keys():
             i, j = 0, 0
-            unit_groupbox = PlaneGroupBox(Unit.get(Unit.id == unit))
+            unit_groupbox = UnitPlaneGroupBox(Unit.get(Unit.id == unit))
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
             planes = self.lc.planes["to_exec"][unit]

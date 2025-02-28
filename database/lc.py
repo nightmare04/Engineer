@@ -6,7 +6,7 @@ from PyQt6.QtWidgets import QTableView, QStyledItemDelegate, QPushButton
 from PyQt6.QtGui import QStandardItem, QStandardItemModel, QColor, QBrush
 from custom_widgets.buttons import PlaneBtn, SpecBtn
 from database.models import *
-from custom_widgets.groupboxs import PlaneGroupBox
+from custom_widgets.groupboxs import UnitPlaneGroupBox
 
 
 def add_lc(w, lc_obj=None):
@@ -53,7 +53,7 @@ def dump_plane(w):
     plane_to_exec = {}
     plane_on_create = {}
     res = {}
-    units_gb = w.ui.podr_groupbox.findChildren(PlaneGroupBox)
+    units_gb = w.ui.podr_groupbox.findChildren(UnitPlaneGroupBox)
     for unit_gb in units_gb:
         res_to_exec = []
         res_on_create = []

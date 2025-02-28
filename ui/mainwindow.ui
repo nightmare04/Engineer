@@ -14,7 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,4">
+   <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="sizeConstraint">
@@ -68,19 +68,6 @@
       <property name="orientation">
        <enum>Qt::Orientation::Vertical</enum>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QStackedWidget" name="stackedWidget">
-      <property name="currentIndex">
-       <number>2</number>
-      </property>
-      <widget class="QWidget" name="pki_page"/>
-      <widget class="QWidget" name="lk_page">
-       <layout class="QVBoxLayout" name="verticalLayout_2"/>
-      </widget>
-      <widget class="QWidget" name="ispr_page"/>
-      <widget class="QWidget" name="rekl_page"/>
      </widget>
     </item>
    </layout>

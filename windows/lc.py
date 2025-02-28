@@ -2,7 +2,7 @@ import datetime
 from functools import partial
 
 from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout, QWidget
 
 from custom_widgets.buttons import TypeBtn
 from database.lc import add_lc
@@ -10,6 +10,73 @@ from ui import Ui_D_add_lk
 from database.models import *
 from custom_widgets.groupboxs import PlaneGroupBox
 from custom_widgets.buttons import SpecBtn, PlaneBtn
+from custom_widgets.tables import *
+from custom_widgets.combobox import *
+
+class MainLC(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.mainLayout = QVBoxLayout()
+        self.setLayout(self.mainLayout)
+        self.table = LCTableView()
+        self.table.doubleClicked.connect(self.exec_lc)
+        self.mainLayout.addWidget(self.table)
+
+        self.filter_layout = QHBoxLayout()
+        self.btn_filter_ex = QPushButton("Только не &выполненные")
+        self.btn_filter_ex.setCheckable(True)
+        self.btn_filter_ex.clicked.connect(lambda: self.set_filter_by_btn(1, self.btn_filter_ex))
+
+        self.btn_filter_de = QPushButton("Только &просроченные")
+        self.btn_filter_de.setCheckable(True)
+        self.btn_filter_de.clicked.connect(lambda: self.set_filter_by_btn(2, self.btn_filter_de))
+
+        self.filterPlaneCombo = PlaneFilterComboBox(Plane.select().where(Plane.not_delete == True))
+        self.filterPlaneCombo.currentIndexChanged.connect(lambda index: self.set_filter_by_combo(index))
+        self.filter_layout.addWidget(self.btn_filter_ex)
+        self.filter_layout.addWidget(self.btn_filter_de)
+        self.filter_layout.addWidget(self.filterPlaneCombo)
+        self.mainLayout.addLayout(self.filter_layout)
+
+        self.btn_layout = QHBoxLayout()
+        self.btn_add_lc = QPushButton("Добавить")
+        self.btn_add_lc.clicked.connect(self.add_lc_w)
+        self.btn_layout.addWidget(self.btn_add_lc)
+        self.mainLayout.addLayout(self.btn_layout)
+
+    def set_filter_by_combo(self, index):
+        data = self.filterPlaneCombo.itemData(index, role=Qt.ItemDataRole.DisplayRole)
+        self.set_filter(data, 5)
+
+    def set_filter_by_btn(self, case, btn):
+        if case == 1 and btn.isChecked():
+            self.set_filter("Не выполнено", 5)
+            return
+        if case == 2 and btn.isChecked():
+            self.set_filter('Просрочен', 3)
+            return
+        if not btn.isChecked():
+            self.set_filter('', 0)
+            return
+
+    def set_filter(self, data, col):
+        if data == "Все":
+            self.table.proxy_model.setFilterRegularExpression('')
+        else:
+            self.table.proxy_model.setFilterRegularExpression(data)
+            self.table.proxy_model.setFilterKeyColumn(col)
+
+    def add_lc_w(self):
+        lcw = AddLC()
+        if lcw.exec():
+            add_lc(lcw)
+            self.lc_table.model.updateData(ListControl.select())
+
+    def exec_lc(self, item):
+        lc_id = item.siblingAtColumn(6).data()
+        exlcw = ExecLC(lc_id)
+        if exlcw.exec():
+            self.lc_table.model.updateData(ListControl.select())
 
 
 class AddLC(QDialog):
@@ -268,3 +335,5 @@ class ExecSpec(QDialog):
             btn.setStyleSheet("background-color: red")
         else:
             btn.setStyleSheet("background-color: green")
+
+

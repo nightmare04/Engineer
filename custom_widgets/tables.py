@@ -76,7 +76,7 @@ class ListControlModel(QAbstractTableModel):
                     planes_incomplete.append(plane_id)
         if len(planes_incomplete) == 0:
             return "Все выполнено"
-        res = ""
+        res = "Не выполнено: "
         for plane_id in planes_incomplete:
             plane = Plane.get_by_id(plane_id)
             res += f'{plane.name}, '

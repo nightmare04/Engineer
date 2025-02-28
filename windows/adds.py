@@ -136,6 +136,8 @@ class AddPlane(Adds):
     def clean(self):
         self.bortNum.setText("")
         self.zavNum.setText("")
+        self.dateVyp.clear()
+        self.dateRem.clear()
 
     def load(self):
         self.bortNum.setText(self.plane.name)

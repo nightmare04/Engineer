@@ -3,7 +3,8 @@ from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyM
 from PyQt6.QtGui import QBrush, QColor
 from peewee import reraise
 
-from database.models import ListControl, ListControlExec, Plane, PlaneType, Unit, OsobPlane, Spec
+from database.models import ListControl, ListControlExec, Plane, PlaneType, Unit, OsobPlane, Spec, RemType, RemZav, \
+    VypZav
 import datetime
 
 
@@ -74,9 +75,10 @@ class ListControlModel(QAbstractTableModel):
                     planes_incomplete.append(plane_id)
         if len(planes_incomplete) == 0:
             return "Все выполнено"
-        res = "Не выполнено на ВС: "
+        res = ""
         for plane_id in planes_incomplete:
-            res += f'{Plane.get_by_id(plane_id).bortNum}, '
+            plane = Plane.get_by_id(plane_id)
+            res += f'{plane.name}, '
         res = res[:-2]
         return res
 
@@ -192,27 +194,34 @@ class PlaneTableModel(QAbstractTableModel):
             plane = self._dataset[index.row()]
             col = index.column()
             if col == 0:
-                return f'{plane.planeType}'
+                return f'{PlaneType.get_by_id(plane.planeType).name}'
             elif col == 1:
-                return f'{plane.unit}'
+                return f'{Unit.get_by_id(plane.unit).name}'
             elif col == 2:
-                return f'{plane.bortNum}'
+                return f'{plane.name}'
             elif col == 3:
                 return f'{plane.zavNum}'
             elif col == 4:
-                return f'{plane.dateVyp}'
+                return f'{plane.dateVyp.strftime("%d.%m.%Y")}'
             elif col == 5:
-                return f'{plane.vypZav}'
+                return f'{VypZav.get_by_id(plane.vypZav).name}'
             elif col == 6:
-                return f'{plane.dateRem}'
+                return f'{plane.dateRem.strftime("%d.%m.%Y")}'
             elif col == 7:
-                return f'{plane.remType}'
+                return f'{RemType.get_by_id(plane.remType).name}'
             elif col == 8:
-                return f'{plane.remZav}'
+                return f'{RemZav.get_by_id(plane.remZav).name}'
             elif col == 9:
-                return f'{plane.osobPlane}'
+                return f'{self.osob_to_text(plane.osobPlane)}'
             elif col == 10:
                 return f'{plane.id}'
+
+    def osob_to_text(self, osobs):
+        res = ''
+        for osob in osobs:
+            res += f"{OsobPlane.get_by_id(osob).name}, "
+        res = res[:-2]
+        return res
 
     def headerData(self, section, orientation, role=...):
         if role == Qt.ItemDataRole.DisplayRole:
@@ -240,8 +249,10 @@ class PlaneTableModel(QAbstractTableModel):
 
 
 class PlaneTableView(QTableView):
-    def __init__(self, parent=None):
+    def __init__(self, header, basemodel, parent=None):
         super().__init__(parent)
+        self.head = header
+        self.instance = basemodel
         self.query = Plane.select().where(Plane.not_delete == True)
         self.model = PlaneTableModel(query=self.query)
         self.proxy_model = QSortFilterProxyModel()
@@ -250,7 +261,7 @@ class PlaneTableView(QTableView):
         self.setModel(self.proxy_model)
         self.hideColumn(10)
         # self.setColumnWidth(5, 200)
-        self.verticalHeader().setDefaultSectionSize(30)
+        self.verticalHeader().setDefaultSectionSize(90)
 
 
 class PlaneTypeTableModel(AllTableModel):

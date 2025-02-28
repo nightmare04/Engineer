@@ -7,8 +7,8 @@ from custom_widgets.tables import LCTableView, PlaneTableView
 from custom_widgets.combobox import PlaneFilterComboBox
 from ui import Ui_MainWindow
 from database.lc import create_tables, add_lc
-from database.models import ListControl, Plane, PlaneType, Unit, Spec, OsobPlane
-from windows.adds import AddType, AddPlane, AddUnit, AddSpec, AddOsob
+from database.models import ListControl, Plane, PlaneType, Unit, Spec, OsobPlane, VypZav, RemZav, RemType
+from windows.adds import AddPlane, AddOsob, AddAll
 from windows.lc import AddLC, ExecLC
 from windows.lists import Lists
 
@@ -52,15 +52,42 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.btn_lk.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.lk_page))
         self.ui.btn_ispr.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.ispr_page))
         self.ui.btn_rekl.clicked.connect(partial(self.ui.stackedWidget.setCurrentWidget, self.ui.rekl_page))
-        self.ui.planes_action.triggered.connect(self.plane_list)
-        self.ui.units_action.triggered.connect(lambda: Lists("Подразделения", ["Подразделение", ""], Unit, AddUnit).exec())
-        self.ui.type_plane_action.triggered.connect(lambda: Lists("Типы самолетов", ["Тип",""], PlaneType, AddType).exec())
-        self.ui.spec_action.triggered.connect(lambda: Lists("Специальности", ["Специальность",""], Spec, AddSpec).exec())
-        self.ui.osob_plane_action.triggered.connect(lambda: Lists("Особенности",["Особенность",""], OsobPlane, AddOsob).exec())
+        self.connect_signals()
 
-    def plane_list(self):
-        Lists("Самолеты", PlaneTableView, Plane, AddPlane).exec()
+    def connect_signals(self):
+        self.ui.planes_action.triggered.connect(self.open_planes)
+        self.ui.units_action.triggered.connect(self.open_units)
+        self.ui.type_plane_action.triggered.connect(self.open_planeType)
+        self.ui.spec_action.triggered.connect(self.open_specs)
+        self.ui.osob_plane_action.triggered.connect(self.open_osobs)
+        self.ui.vypZav_action.triggered.connect(self.open_vypZav)
+        self.ui.rem_zav_action.triggered.connect(self.open_remZav)
+        self.ui.remType_action.triggered.connect(self.open_remType)
+
+    def open_units(self):
+        Lists(title="Подразделения", basemodel=Unit, header=["Подразделение", ""], table=None).exec()
+
+    def open_planeType(self):
+        Lists(title="Типы самолетов", basemodel=PlaneType, header=["Тип", ""], table=None).exec()
+
+    def open_osobs(self):
+        Lists(title="Особенности", header=["Особенность", ""], basemodel=OsobPlane, add_form=AddOsob).exec()
+
+    def open_vypZav(self):
+        Lists(title="Заводы изготовители", basemodel=VypZav, header=["Завод", ""], table=None).exec()
+
+    def open_specs(self):
+        Lists(title="Специальности", basemodel=Spec, header=["Специальность", ""], table=None).exec()
+
+    def open_planes(self):
+        Lists("Самолеты", basemodel=Plane, add_form=AddPlane, table=PlaneTableView).exec()
         self.plane_combo.model.updateData(Plane.select().where(Plane.not_delete == True))
+
+    def open_remZav(self):
+        Lists(title="Заводы изготовители", basemodel=RemZav, header=["Завод", ""], table=None).exec()
+
+    def open_remType(self):
+        Lists(title="Тип ремонта", basemodel=RemType, header=["Наименование", ""], table=None).exec()
 
     def set_filter_by_combo(self, index):
         data = self.plane_combo.itemData(index, role=Qt.ItemDataRole.DisplayRole)

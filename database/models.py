@@ -39,7 +39,6 @@ class PlaneType(BaseModel):
 
 class Unit(BaseModel):
     name = CharField(max_length=100, null=False)
-    reglament = BooleanField(default=False)
     not_delete = BooleanField(default=True)
 
     class Meta:
@@ -48,6 +47,7 @@ class Unit(BaseModel):
 
 class RemZav(BaseModel):
     name = CharField(max_length=30, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'rem_zav'
@@ -55,6 +55,7 @@ class RemZav(BaseModel):
 
 class VypZav(BaseModel):
     name = CharField(max_length=30, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'vyp_zav'
@@ -63,7 +64,7 @@ class VypZav(BaseModel):
 class Plane(BaseModel):
     planeType = ForeignKeyField(PlaneType, backref='planes')
     zavNum = CharField(max_length=30, null=False)
-    bortNum = CharField(max_length=10, null=False)
+    name = CharField(max_length=10, null=False)
     dateVyp = DateField()
     dateRem = DateField()
     remType = CharField(max_length=30, null=False)
@@ -79,6 +80,7 @@ class Plane(BaseModel):
 
 class RemType(BaseModel):
     name = CharField(max_length=30, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'rem_type'

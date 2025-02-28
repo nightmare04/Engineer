@@ -245,9 +245,9 @@ class ExecSpec(QDialog):
             btn = SpecBtn(spec_obj, lc)
             btn.clicked.connect(partial(self.switch_spec, btn, self.lc.id, self.plane.id, spec_obj.id))
             spec_check = ListControlExec.get_or_none(
-                lc_id=self.lc.id,
-                plane_id=self.plane.id,
-                spec_id=spec_obj.id
+                lcId=self.lc.id,
+                planeId=self.plane.id,
+                specId=spec_obj.id
             )
             if spec_check is None:
                 btn.setStyleSheet("background-color: red")
@@ -258,9 +258,9 @@ class ExecSpec(QDialog):
     @staticmethod
     def switch_spec(btn, lc_id, plane_id, spec_id):
         res = ListControlExec.get_or_create(
-            lc_id=lc_id,
-            plane_id=plane_id,
-            spec_id=spec_id,
+            lcId=lc_id,
+            planeId=plane_id,
+            specId=spec_id,
             defaults={'date': datetime.date.today()}
         )
         if not res[1]:

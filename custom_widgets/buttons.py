@@ -10,8 +10,12 @@ class PlaneBtn(QPushButton):
     def __init__(self, plane: Plane, lc=None, parent=None):
         self.plane = plane
         self.lc = lc
-        super().__init__(self.plane.bortNum, parent)
-        self.setFixedSize(QSize(40, 40))
+        if len(PlaneType.select().where(PlaneType.not_delete == True)) > 1:
+            name_btn = f'{self.plane.planeType.name}\n{self.plane.name}'
+            super().__init__(name_btn, parent)
+        else:
+            super().__init__(self.plane.name, parent)
+        self.setFixedSize(QSize(60, 40))
         self.setCheckable(True)
         if self.lc is not None:
             self.check_exec(lc)
@@ -75,7 +79,7 @@ class TypeBtn(QPushButton):
     def __init__(self, type_plane: PlaneType, parent=None):
         self.type_plane = type_plane
         super().__init__(parent)
-        self.setText(type_plane.type)
+        self.setText(type_plane.name)
 
 
 class OsobBtn(QPushButton):

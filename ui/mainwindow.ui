@@ -102,7 +102,9 @@
     <addaction name="spec_action"/>
     <addaction name="type_plane_action"/>
     <addaction name="osob_plane_action"/>
+    <addaction name="vypZav_action"/>
     <addaction name="rem_zav_action"/>
+    <addaction name="remType_action"/>
     <addaction name="planes_action"/>
    </widget>
    <addaction name="menu"/>
@@ -136,6 +138,16 @@
   <action name="rem_zav_action">
    <property name="text">
     <string>Ремонтные заводы</string>
+   </property>
+  </action>
+  <action name="vypZav_action">
+   <property name="text">
+    <string>Заводы изготовители</string>
+   </property>
+  </action>
+  <action name="remType_action">
+   <property name="text">
+    <string>Типы ремонтов</string>
    </property>
   </action>
  </widget>

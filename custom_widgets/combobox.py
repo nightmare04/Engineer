@@ -31,6 +31,9 @@ class PlaneFilterComboModel(MyComboModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
+    def rowCount(self, parent=...):
+        return len(self._query) + 1
+    
     def data(self, index, role=...):
         if not index.isValid():
             return
@@ -39,7 +42,7 @@ class PlaneFilterComboModel(MyComboModel):
                 return 'Все'
 
         if role == Qt.ItemDataRole.DisplayRole:
-            return self._query[index.row() - 1].bortNum
+            return self._query[index.row() - 1].name
 
         if role == Qt.ItemDataRole.UserRole:
             return self._query[index.row() - 1].id
@@ -55,7 +58,8 @@ class MyComboBox(QComboBox):
 class PlaneFilterComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)
-
+        self.model = PlaneFilterComboModel(query)
+        self.setModel(self.model)
 
 class TypePlaneComboBox(MyComboBox):
     def __init__(self, query, parent=None):

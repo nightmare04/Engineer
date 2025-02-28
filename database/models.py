@@ -97,6 +97,7 @@ class OsobPlane(BaseModel):
 
 class Spec(BaseModel):
     name = CharField(max_length=100, null=False)
+    planeType = ForeignKeyField(PlaneType)
     not_delete = BooleanField(default=True)
 
     class Meta:
@@ -117,6 +118,7 @@ class PlaneSystem(BaseModel):
     planeType = ForeignKeyField(PlaneType)
     specId = ForeignKeyField(Spec, backref='lcexec')
     name = CharField(max_length=100, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'plane_systems'

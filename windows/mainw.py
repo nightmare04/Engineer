@@ -2,6 +2,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QRect
 from PyQt6.QtWidgets import QWidget, QMainWindow, QMenu, QHBoxLayout, QStackedWidget, QFrame, QMenuBar
 
+from windows.adds import AddPlaneSystem, AddOsob, AddSpec
 from windows.ispravnost import Ispravnost
 from windows.lc import MainLCW
 from windows.leftdock import *
@@ -44,6 +45,9 @@ class MainWindow(QMainWindow):
         self.remType_menu = QAction("Типы ремонта", parent=self)
         self.remType_menu.triggered.connect(self.open_remType)
 
+        self.planeSystem_menu = QAction("Системы самолета", parent=self)
+        self.planeSystem_menu.triggered.connect(self.open_plane_system)
+
 
         self.menu.addAction(self.units_menu)
         self.menu.addAction(self.spec_menu)
@@ -53,6 +57,7 @@ class MainWindow(QMainWindow):
         self.menu.addAction(self.rem_zav_menu)
         self.menu.addAction(self.remType_menu)
         self.menu.addAction(self.planes_menu)
+        self.menu.addAction(self.planeSystem_menu)
         self.menubar.addAction(self.menu.menuAction())
 
         self.centralWidget = QWidget(self)
@@ -96,7 +101,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def open_specs():
-        Lists(title="Специальности", basemodel=Spec, header=["Специальность", ""], table=None).exec()
+        Lists(title="Специальности", basemodel=Spec, header=["Специальность", ""], table=None, add_form=AddSpec).exec()
 
     def open_planes(self):
         Lists("Самолеты", basemodel=Plane, add_form=AddPlane, table=PlaneTableView).exec()
@@ -109,3 +114,11 @@ class MainWindow(QMainWindow):
     @staticmethod
     def open_remType():
         Lists(title="Тип ремонта", basemodel=RemType, header=["Наименование", ""], table=None).exec()
+
+    @staticmethod
+    def open_plane_system():
+        Lists(title="Системы самолета",
+              basemodel=PlaneSystem,
+              header=["Наименование", ""],
+              table=None,
+              add_form=AddPlaneSystem).exec()

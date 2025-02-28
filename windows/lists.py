@@ -26,7 +26,10 @@ class Lists(QDialog):
         self.table.doubleClicked.connect(self.edit)
         self.basemodel = basemodel
         self.query = basemodel.select().where(basemodel.not_delete == True)
-        self.addForm = add_form(basemodel)
+        if add_form == AddAll:
+            self.addForm = add_form(basemodel=basemodel)
+        else:
+            self.addForm = add_form()
         self.mainlayout.addWidget(self.table)
         self.btnlayout = QHBoxLayout()
         self.mainlayout.addLayout(self.btnlayout)

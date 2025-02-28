@@ -21,10 +21,10 @@ class MyComboModel(QAbstractListModel):
             return
 
         if role == Qt.ItemDataRole.DisplayRole:
-            return self._query[index.row() - 1].name
+            return self._query[index.row()].name
 
         if role == Qt.ItemDataRole.UserRole:
-            return self._query[index.row() - 1].id
+            return self._query[index.row()].id
 
 
 class PlaneFilterComboModel(MyComboModel):
@@ -83,5 +83,10 @@ class RemTypeComboBox(MyComboBox):
 
 
 class VypZavComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+
+class SpecComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)

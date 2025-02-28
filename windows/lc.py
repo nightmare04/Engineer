@@ -6,14 +6,14 @@ from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QD
 
 from custom_widgets.buttons import TypeBtn
 from database.lc import add_lc
-from ui import Ui_D_add_lk
 from database.models import *
 from custom_widgets.groupboxs import PlaneGroupBox
 from custom_widgets.buttons import SpecBtn, PlaneBtn
 from custom_widgets.tables import *
 from custom_widgets.combobox import *
 
-class MainLC(QWidget):
+
+class MainLCW(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.mainLayout = QVBoxLayout()
@@ -335,5 +335,3 @@ class ExecSpec(QDialog):
             btn.setStyleSheet("background-color: red")
         else:
             btn.setStyleSheet("background-color: green")
-
-

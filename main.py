@@ -1,5 +1,6 @@
 from PyQt6 import QtWidgets
-from windows import MainWindow
+from windows.mainw import MainWindow
+from database.models import create_tables
 
 
 if __name__ == '__main__':
@@ -8,6 +9,7 @@ if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
     app.setStyle('Fusion')
     # app.setWindowIcon(QtGui.QIcon('ui/main.ico'))
+    create_tables()
     main = MainWindow()
     main.resize(1000, 700)
     main.show()

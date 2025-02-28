@@ -72,6 +72,8 @@ class MainWindow(QMainWindow):
         self.stack.addWidget(self.lcWidget)
         self.mainLayout.addWidget(self.stack)
 
+        self.leftDock.btnLC.clicked.connect(lambda: self.stack.setCurrentWidget(self.lcWidget))
+
     @staticmethod
     def open_units():
         Lists(title="Подразделения", basemodel=Unit, header=["Подразделение", ""], table=None).exec()

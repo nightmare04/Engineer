@@ -39,7 +39,7 @@ class AllTableModel(QAbstractTableModel):
             elif orientation == Qt.Orientation.Vertical:
                 return f'{section + 1}'
 
-    def updateData(self):
+    def updateData(self, query):
         self.beginResetModel()
         self._dataset = self.basemodel.select().where(self.basemodel.not_delete == True)
         self.endResetModel()

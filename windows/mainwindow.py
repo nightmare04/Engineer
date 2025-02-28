@@ -64,29 +64,36 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.rem_zav_action.triggered.connect(self.open_remZav)
         self.ui.remType_action.triggered.connect(self.open_remType)
 
-    def open_units(self):
+    @staticmethod
+    def open_units():
         Lists(title="Подразделения", basemodel=Unit, header=["Подразделение", ""], table=None).exec()
 
-    def open_planeType(self):
+    @staticmethod
+    def open_planeType():
         Lists(title="Типы самолетов", basemodel=PlaneType, header=["Тип", ""], table=None).exec()
 
-    def open_osobs(self):
+    @staticmethod
+    def open_osobs():
         Lists(title="Особенности", header=["Особенность", ""], basemodel=OsobPlane, add_form=AddOsob).exec()
 
-    def open_vypZav(self):
+    @staticmethod
+    def open_vypZav():
         Lists(title="Заводы изготовители", basemodel=VypZav, header=["Завод", ""], table=None).exec()
 
-    def open_specs(self):
+    @staticmethod
+    def open_specs():
         Lists(title="Специальности", basemodel=Spec, header=["Специальность", ""], table=None).exec()
 
     def open_planes(self):
         Lists("Самолеты", basemodel=Plane, add_form=AddPlane, table=PlaneTableView).exec()
         self.plane_combo.model.updateData(Plane.select().where(Plane.not_delete == True))
 
-    def open_remZav(self):
+    @staticmethod
+    def open_remZav():
         Lists(title="Заводы изготовители", basemodel=RemZav, header=["Завод", ""], table=None).exec()
 
-    def open_remType(self):
+    @staticmethod
+    def open_remType():
         Lists(title="Тип ремонта", basemodel=RemType, header=["Наименование", ""], table=None).exec()
 
     def set_filter_by_combo(self, index):

@@ -43,8 +43,3 @@ class OsobGroupBox(QGroupBox):
             if i > 2:
                 j += 1
                 i = 0
-
-
-
-
-

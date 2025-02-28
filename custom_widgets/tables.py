@@ -11,6 +11,7 @@ import datetime
 class AllTableModel(QAbstractTableModel):
     def __init__(self, basemodel, header, query, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.query = query
         self.basemodel = basemodel
         self._dataset = basemodel.select().where(basemodel.not_delete == True)
         self.header = header
@@ -39,9 +40,8 @@ class AllTableModel(QAbstractTableModel):
             elif orientation == Qt.Orientation.Vertical:
                 return f'{section + 1}'
 
-    def updateData(self, query):
+    def updateData(self, query=None):
         self.beginResetModel()
-        Plane.up
         self._dataset = self.basemodel.select().where(self.basemodel.not_delete == True)
         self.endResetModel()
 
@@ -217,7 +217,8 @@ class PlaneTableModel(QAbstractTableModel):
             elif col == 10:
                 return f'{plane.id}'
 
-    def osob_to_text(self, osobs):
+    @staticmethod
+    def osob_to_text(osobs):
         res = ''
         for osob in osobs:
             res += f"{OsobPlane.get_by_id(osob).name}, "

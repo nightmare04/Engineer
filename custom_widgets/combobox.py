@@ -33,7 +33,7 @@ class PlaneFilterComboModel(MyComboModel):
 
     def rowCount(self, parent=...):
         return len(self._query) + 1
-    
+
     def data(self, index, role=...):
         if not index.isValid():
             return
@@ -61,6 +61,7 @@ class PlaneFilterComboBox(MyComboBox):
         self.model = PlaneFilterComboModel(query)
         self.setModel(self.model)
 
+
 class TypePlaneComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)
@@ -69,6 +70,7 @@ class TypePlaneComboBox(MyComboBox):
 class UnitComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)
+
 
 class RemZavComboBox(MyComboBox):
     def __init__(self, query, parent=None):

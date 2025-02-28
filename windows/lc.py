@@ -41,7 +41,7 @@ class AddLC(QDialog):
             btn = TypeBtn(plane_type)
             btn.setCheckable(True)
             btn.setStyleSheet("TypeBtn{background-color: red;}"
-                               "TypeBtn:checked{background-color: green;}")
+                              "TypeBtn:checked{background-color: green;}")
             btn.clicked.connect(partial(self.type_select, btn))
             self.plane_type_gb.layout().addWidget(btn)
         self.ui.verticalLayout.insertWidget(0, self.plane_type_gb)

@@ -4,8 +4,8 @@ from PyQt6.QtWidgets import QWidget, QMainWindow, QMenu, QHBoxLayout, QStackedWi
 
 from windows.lc import ListLC
 from windows.leftdock import *
-from windows.lists import Lists
-
+from windows.lists import Lists, PlaneTableView
+from windows.adds import AddPlane
 from database.models import *
 
 
@@ -96,7 +96,7 @@ class MainWindow(QMainWindow):
 
     def open_planes(self):
         Lists("Самолеты", basemodel=Plane, add_form=AddPlane, table=PlaneTableView).exec()
-        self.plane_combo.model.updateData(Plane.select().where(Plane.not_delete == True))
+        self.filterPlaneCombo.model.updateData(Plane.select().where(Plane.not_delete == True))
 
     @staticmethod
     def open_remZav():

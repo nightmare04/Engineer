@@ -148,11 +148,22 @@ class Agregate(BaseModel):
         db_table = 'agregates'
 
 
+class AgregateOnPlane(BaseModel):
+    planeAgregate = ForeignKeyField(PlaneAgregate)
+    zavNum = CharField(max_length=100, null=True)
+    dateVyp = DateField
+    planeId = ForeignKeyField(Plane)
+    state = ForeignKeyField(AgregateState)
+
+    class Meta:
+        db_table = 'agregates'
+
+
 def create_tables():
     with db:
         db.create_tables(
             [
                 ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, PlaneAgregate,
-                Agregate, OsobPlane, AgregateState, RemZav, RemType, VypZav
+                AgregateOnPlane, OsobPlane, AgregateState, RemZav, RemType, VypZav
             ]
         )

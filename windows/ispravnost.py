@@ -1,4 +1,6 @@
-from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QDialog
+from functools import partial
+
+from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QDialog, QPushButton
 
 from custom_widgets.buttons import PlaneBtn
 from custom_widgets.groupboxs import UnitPlaneGroupBox
@@ -16,6 +18,12 @@ class Ispravnost(QWidget):
             unit_gb = UnitPlaneGroupBox(unit, fill_plane=True, parent=self)
             self.unitLayout.addWidget(unit_gb)
         self.mainLayout.addLayout(self.unitLayout)
+        self.add_connect()
+
+    def add_connect(self):
+        planes_btn = self.findChildren(PlaneBtn)
+        for btn in planes_btn:
+            btn.clicked.connect(partial(IspravnostPlane, plane=btn.plane))
 
 
 class IspravnostPlane(QDialog):
@@ -28,3 +36,13 @@ class IspravnostPlane(QDialog):
         self.setLayout(self.mainLayout)
         self.table = IspravnostPlaneTableView(plane)
         self.mainLayout.addWidget(self.table)
+
+        self.btnLayout = QHBoxLayout()
+        self.btnAdd = QPushButton("Добавить")
+        self.btnOk = QPushButton("Ок")
+        self.btnOk.clicked.connect(self.accept)
+        self.btnLayout.addWidget(self.btnAdd)
+        self.btnLayout.addWidget(self.btnOk)
+        self.mainLayout.addLayout(self.btnLayout)
+
+        self.exec()

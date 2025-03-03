@@ -3,7 +3,7 @@ from operator import truediv
 from PyQt6.QtCore import QSize, Qt, QMimeData
 from PyQt6.QtGui import QPalette, QBrush, QColor, QDrag, QPixmap
 from PyQt6.QtWidgets import QPushButton
-from database.models import Plane, Spec, Unit, ListControlExec, PlaneType, OsobPlane
+from database.models import Plane, Spec, Unit, ListControlExec, PlaneType, OsobPlane, AgregateOnPlane
 
 
 class PlaneBtn(QPushButton):
@@ -33,6 +33,12 @@ class PlaneBtn(QPushButton):
             drag.setPixmap(pixmap)
 
             drag.exec(Qt.DropAction.MoveAction)
+
+    def check_ispr(self):
+        if len(AgregateOnPlane.select().where(self.plane.id == AgregateOnPlane.planeId, AgregateOnPlane.state > 1)) > 0:
+            self.setStyleSheet("background-color: red")
+        else:
+            self.setStyleSheet("background-color: green")
 
     def check_exec(self, lc):
         specs_for_exec = lc.specs["to_exec"]

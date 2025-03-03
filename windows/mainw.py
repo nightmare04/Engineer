@@ -2,7 +2,7 @@ from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QRect
 from PyQt6.QtWidgets import QWidget, QMainWindow, QMenu, QHBoxLayout, QStackedWidget, QFrame, QMenuBar
 
-from windows.lc import MainLCW
+from windows.lc import ListLC
 from windows.leftdock import *
 from windows.lists import Lists
 
@@ -68,7 +68,7 @@ class MainWindow(QMainWindow):
         self.mainLayout.addWidget(self.line)
 
         self.stack = QStackedWidget()
-        self.lcWidget = MainLCW()
+        self.lcWidget = ListLC()
         self.stack.addWidget(self.lcWidget)
         self.mainLayout.addWidget(self.stack)
 

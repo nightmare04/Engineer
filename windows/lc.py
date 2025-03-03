@@ -2,7 +2,8 @@ import datetime
 from functools import partial
 
 from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout, QWidget
+from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout, QWidget, \
+    QFormLayout, QLineEdit, QDateEdit, QTextEdit
 
 from custom_widgets.buttons import TypeBtn
 from database.lc import add_lc
@@ -13,7 +14,7 @@ from custom_widgets.tables import *
 from custom_widgets.combobox import *
 
 
-class MainLCW(QWidget):
+class ListLC(QWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.mainLayout = QVBoxLayout()
@@ -82,19 +83,54 @@ class MainLCW(QWidget):
 class AddLC(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.ui = Ui_D_add_lk()
-        self.ui.setupUi(self)
-        self.setWindowTitle("Добавить Лист контроля")
-        self.ui.btn_ok.clicked.connect(self.accept)
-        self.ui.btn_cancel.clicked.connect(self.reject)
+        self.resize(800, 600)
+        self.mainLayout = QVBoxLayout()
+        self.setLayout(self.mainLayout)
 
-        self.plane_type_gb = QGroupBox()
-        self.plane_type_gb.setTitle("Типы самолетов")
-        self.plane_type_gb.setLayout(QHBoxLayout())
+        self.formLayout = QFormLayout()
+        self.tlgEdit = QLineEdit()
+        self.tlgDateEdit = QDateEdit()
+        self.tlgDateEdit.setDate(datetime.date.today())
+        self.tlgDeadline = QDateEdit()
+        self.tlgDeadline.setDate(datetime.date.today())
+        self.lcNumber = QLineEdit()
+        self.lcDescription = QTextEdit()
+        self.formLayout.addRow("Номер указания/ТЛГ", self.tlgEdit)
+        self.formLayout.addRow("Дата", self.tlgDateEdit)
+        self.formLayout.addRow("Срок выполнения", self.tlgDeadline)
+        self.formLayout.addRow("Номер листа контроля", self.lcNumber)
+        self.formLayout.addRow("Краткое содержание", self.lcDescription)
+        self.mainLayout.addLayout(self.formLayout)
+
+        self.dynLayout = QVBoxLayout()
+        self.specGroupbox = QGroupBox()
+        self.specLayout = QHBoxLayout()
+        self.specGroupbox.setLayout(self.specLayout)
+        self.specGroupbox.setTitle("Специальности")
+        self.unitGroupbox = QGroupBox()
+        self.unitLayout = QHBoxLayout()
+        self.unitGroupbox.setLayout(self.unitLayout)
+        self.unitGroupbox.setTitle("Подразделения")
+        self.dynLayout.addWidget(self.specGroupbox)
+        self.dynLayout.addWidget(self.unitGroupbox)
+        self.mainLayout.addLayout(self.dynLayout)
+
+        self.btnLayout = QHBoxLayout()
+        self.btnOk = QPushButton("Ок")
+        self.btnCancel = QPushButton("Отмена")
+        self.btnOk.clicked.connect(self.add_lc)
+        self.btnCancel.clicked.connect(self.reject)
+        self.btnLayout.addWidget(self.btnOk)
+        self.btnLayout.addWidget(self.btnCancel)
+        self.mainLayout.addLayout(self.btnLayout)
+
+        self.setWindowTitle("Добавить Лист контроля")
+
+        self.planeTypeGroupbox = QGroupBox()
+        self.planeTypeGroupbox.setTitle("Типы самолетов")
+        self.planeTypeGroupbox.setLayout(QHBoxLayout())
 
         self.fill_form()
-        self.ui.tlgDateEdit.setDate(datetime.date.today())
-        self.ui.tlgDeadlineEdit.setDate((datetime.date.today()))
 
     def fill_form(self):
         if len(PlaneType.select().where(PlaneType.not_delete == True)) > 1:
@@ -110,8 +146,8 @@ class AddLC(QDialog):
             btn.setStyleSheet("TypeBtn{background-color: red;}"
                               "TypeBtn:checked{background-color: green;}")
             btn.clicked.connect(partial(self.type_select, btn))
-            self.plane_type_gb.layout().addWidget(btn)
-        self.ui.verticalLayout.insertWidget(0, self.plane_type_gb)
+            self.planeTypeGroupbox.layout().addWidget(btn)
+        self.dynLayout.insertWidget(0, self.planeTypeGroupbox)
 
     def type_select(self, type_btn: TypeBtn):
         planes_btns = self.findChildren(PlaneBtn)
@@ -125,13 +161,13 @@ class AddLC(QDialog):
         specs = Spec.select().where(Spec.not_delete == True)
         for spec in specs:
             btn_spec = SpecBtn(spec)
-            self.ui.spec_layout.addWidget(btn_spec)
+            self.specLayout.addWidget(btn_spec)
 
     def unit_fill(self):
         for unit in Unit.select().where(Unit.not_delete == True):
             i = 0
             j = 0
-            unit_groupbox = PlaneGroupBox(unit, True, self.ui.podr_groupbox)
+            unit_groupbox = PlaneGroupBox(unit, True, self.unitGroupbox)
             unit_lout = QGridLayout()
             unit_groupbox.setLayout(unit_lout)
             for plane in Plane.select().join(Unit).where(Plane.unit == unit.id, Plane.not_delete == True):
@@ -142,7 +178,57 @@ class AddLC(QDialog):
                 if i > 2:
                     j += 1
                     i = 0
-            self.ui.unit_layout.addWidget(unit_groupbox)
+            self.unitLayout.addWidget(unit_groupbox)
+
+    def add_lc(self, lc_obj=None):
+        if lc_obj is None:
+            lc = ListControl()
+        else:
+            lc = lc_obj
+        lc.tlg = self.tlgEdit.text()
+        lc.tlgDate = self.tlgDateEdit.date().toPyDate()
+        lc.lcNumber = self.lcNumber.text()
+        lc.planes = self.dump_plane()
+        lc.specs = self.dump_spec()
+        lc.tlgDeadline = self.tlgDeadline.date().toPyDate()
+        lc.description = self.lcDescription.toPlainText()
+        lc.save()
+        self.accept()
+
+    def dump_spec(self):
+        spec_on_create = []
+        spec_to_exec = []
+        specs_btns = self.specGroupbox.findChildren(SpecBtn)
+        for spec_btn in specs_btns:
+            spec_on_create.append(spec_btn.spec.id)
+            if spec_btn.isChecked():
+                spec_to_exec.append(spec_btn.spec.id)
+        res = {}
+        res.update({"on_create": spec_on_create})
+        res.update({"to_exec": spec_to_exec})
+        return res
+
+    def dump_plane(self):
+        plane_to_exec = {}
+        plane_on_create = {}
+        res = {}
+        units_gb = self.unitGroupbox.findChildren(PlaneGroupBox)
+        for unit_gb in units_gb:
+            res_to_exec = []
+            res_on_create = []
+            planes_btns = unit_gb.findChildren(PlaneBtn)
+            for plane_btn in planes_btns:
+                res_on_create.append(plane_btn.plane.id)
+                if plane_btn.isChecked():
+                    res_to_exec.append(plane_btn.plane.id)
+            if res_to_exec:
+                plane_to_exec.update({unit_gb.unit.id: res_to_exec})
+            plane_on_create.update({unit_gb.unit.id: res_on_create})
+
+        res.update({"on_create": plane_on_create})
+        res.update({"to_exec": plane_to_exec})
+
+        return res
 
 
 class EditLC(QDialog):

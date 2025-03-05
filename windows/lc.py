@@ -128,7 +128,7 @@ class ListControlWindow(QDialog):
     def type_select(self, type_btn: TypeBtn):
         planes_btns = self.findChildren(PlaneBtn)
         for btn in planes_btns:
-            if type_btn.isChecked() and btn.plane.planeType.id == type_btn.type_plane.id:
+            if type_btn.isChecked() and btn.plane.typeId.id == type_btn.type_plane.id:
                 btn.setChecked(True)
             else:
                 btn.setChecked(False)

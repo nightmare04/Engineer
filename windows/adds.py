@@ -5,9 +5,10 @@ from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTab
 from PyQt6.QtCore import Qt
 
 from custom_widgets.buttons import OsobBtn
-from custom_widgets.combobox import TypePlaneComboBox, UnitComboBox, RemZavComboBox, VypZavComboBox, RemTypeComboBox
+from custom_widgets.combobox import (TypePlaneComboBox, UnitComboBox, RemZavComboBox, VypZavComboBox, RemTypeComboBox,
+                                     SpecComboBox)
 from custom_widgets.groupboxs import OsobGroupBox
-from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, VypZav, OsobPlane
+from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, VypZav, OsobPlane, PlaneSystem
 
 
 class Adds(QDialog):
@@ -17,7 +18,7 @@ class Adds(QDialog):
         self.mainlayout = QVBoxLayout(self)
         self.setLayout(self.mainlayout)
 
-        self.formlayout = QFormLayout()
+        self.form = QFormLayout()
         self.btnlayout = QHBoxLayout()
 
         self.btn_ok = QPushButton("Ок")
@@ -25,50 +26,93 @@ class Adds(QDialog):
         self.btnlayout.addWidget(self.btn_ok)
         self.btnlayout.addWidget(self.btn_cancel)
 
-        self.mainlayout.addLayout(self.formlayout)
+        self.mainlayout.addLayout(self.form)
         self.mainlayout.addLayout(self.btnlayout)
 
         self.btn_ok.clicked.connect(self.add)
         self.btn_cancel.clicked.connect(self.reject)
 
-    def add(self):
-        pass
-
-    def delete(self, model):
-        model.not_delete = False
-        model.save()
-        self.accept()
-
-
-class AddAll(Adds):
-    def __init__(self, basemodel, edit_item=None, parent=None):
+class AddUnit(Adds):
+    def __init__(self, unit: Unit = None, parent=None):
         super().__init__(parent)
-        self.instance = basemodel
-        self.edit_item = edit_item
-        self.setWindowTitle("Добавить")
-        self.instance_edit = QLineEdit()
-        self.formlayout.addRow("&Наименование", self.instance_edit)
-        if edit_item is not None:
-            self.setWindowTitle("Изменить")
+        self.unit = unit
+        self.setWindowTitle("Добавить подразделение")
+        self.unit_name = QLineEdit()
+        self.form.addRow("Подразделение", self.unit_name)
+        if unit is not None:
+            self.setWindowTitle("Изменить подразделение")
+            self.btn_del = QPushButton("Удалить")
+            self.btn_del.clicked.connect(self.remove)
+            self.btnlayout.addWidget(self.btn_del)
+
             self.btn_ok.setText("Сохранить")
             self.btn_ok.clicked.disconnect()
             self.btn_ok.clicked.connect(self.save)
-            self.load(edit_item)
-            self.btn_delete = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_delete)
-            self.btn_delete.clicked.connect(partial(self.delete, self.edit_item))
+            self.load()
 
     def add(self):
-        self.instance.create(name=self.instance_edit.text())
-        self.instance_edit.setText("")
+        unit = Unit()
+        unit.name = self.unit_name.text()
+        unit.save()
+        self.clear()
 
     def save(self):
-        self.edit_item.name = self.instance_edit.text()
-        self.edit_item.save()
+        self.unit.name = self.unit_name.text()
+        self.unit.save()
         self.accept()
 
-    def load(self, edit_item):
-        self.instance_edit.setText(edit_item.name)
+    def clear(self):
+        self.unit_name.setText("")
+
+    def load(self):
+        self.unit_name.setText(self.unit.name)
+
+    def remove(self):
+        self.unit.not_delete = False
+        self.unit.save()
+        self.accept()
+
+
+class AddPlaneType(Adds):
+    def __init__(self, plane_type: PlaneType = None, parent=None):
+        super().__init__(parent)
+        self.plane_type = plane_type
+        self.setWindowTitle("Добавить тип самолета")
+        self.type_name = QLineEdit()
+        self.form.addRow("Тип", self.type_name)
+        if plane_type is not None:
+            self.setWindowTitle("Изменить тип самолета")
+            self.btn_del = QPushButton("Удалить")
+            self.btn_del.clicked.connect(self.remove)
+            self.btnlayout.addWidget(self.btn_del)
+
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+
+    def add(self):
+        plane_type = PlaneType()
+        plane_type.name = self.type_name.text()
+        plane_type.save()
+        self.clear()
+
+    def save(self):
+        self.plane_type.name = self.type_name.text()
+        self.plane_type.save()
+        self.accept()
+
+    def clear(self):
+        self.type_name.setText("")
+
+    def load(self):
+        self.type_name.setText(self.plane_type.name)
+
+    def remove(self):
+        self.plane_type.not_delete = False
+        self.plane_type.save()
+        self.accept()
+
 
 
 class AddPlane(Adds):
@@ -89,16 +133,16 @@ class AddPlane(Adds):
         self.remType = RemTypeComboBox(RemType.select())
         self.osobPlane = OsobGroupBox()
 
-        self.formlayout.addRow("Тип самолета", self.planeType_combobox)
-        self.formlayout.addRow("Подразделение", self.unit_combobox)
-        self.formlayout.addRow("Бортовой номер", self.bortNum)
-        self.formlayout.addRow("Заводской номер", self.zavNum)
-        self.formlayout.addRow("Дата выпуска", self.dateVyp)
-        self.formlayout.addRow("Завод изготовитель", self.vypZav)
-        self.formlayout.addRow("Дата ремонта", self.dateRem)
-        self.formlayout.addRow("АРЗ", self.remZav)
-        self.formlayout.addRow("Вид ремонта", self.remType)
-        self.formlayout.addRow("Особенности самолета", self.osobPlane)
+        self.form.addRow("Тип самолета", self.planeType_combobox)
+        self.form.addRow("Подразделение", self.unit_combobox)
+        self.form.addRow("Бортовой номер", self.bortNum)
+        self.form.addRow("Заводской номер", self.zavNum)
+        self.form.addRow("Дата выпуска", self.dateVyp)
+        self.form.addRow("Завод изготовитель", self.vypZav)
+        self.form.addRow("Дата ремонта", self.dateRem)
+        self.form.addRow("АРЗ", self.remZav)
+        self.form.addRow("Вид ремонта", self.remType)
+        self.form.addRow("Особенности самолета", self.osobPlane)
 
         if self.plane is not None:
             self.setWindowTitle("Изменить самолет")
@@ -176,15 +220,14 @@ class AddPlane(Adds):
 
 
 class AddOsob(Adds):
-    def __init__(self, basemodel, osob: OsobPlane = None, parent=None):
+    def __init__(self,  osob: OsobPlane = None, parent=None):
         super().__init__(parent)
-        self.instance = basemodel
         self.osob = osob
         self.setWindowTitle("Добавить особенность")
         self.osob_edit = QLineEdit()
         self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
-        self.formlayout.addRow("Тип самолета", self.plane_type)
-        self.formlayout.addRow("&Наименование", self.osob_edit)
+        self.form.addRow("Тип самолета", self.plane_type)
+        self.form.addRow("&Наименование", self.osob_edit)
         if self.osob is not None:
             self.setWindowTitle("Изменить")
             self.btn_ok.setText("Сохранить")
@@ -194,19 +237,70 @@ class AddOsob(Adds):
 
             self.btn_del = QPushButton("Удалить")
             self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(partial(self.delete, self.osob))
+            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         osob = OsobPlane()
         osob.name = self.osob_edit.text()
-        osob.planeType = self.planeType.currentData(role=Qt.ItemDataRole.UserRole)
+        osob.planeType = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
         osob.save()
         self.accept()
 
     def load(self):
         self.osob_edit.setText(self.osob.name)
+        self.plane_type.setCurrentIndex(self.plane_type.findData(self.osob.planeType.id))
 
     def save(self):
         self.osob.name = self.osob_edit.text()
+        self.osob.planeType = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
         self.osob.save()
+        self.accept()
+
+    def delete(self):
+        self.osob.not_delete = False
+        self.osob.save()
+        self.accept()
+
+
+class AddSystem(Adds):
+    def __init__(self, basemodel, system: PlaneSystem = None, parent=None):
+        super().__init__(parent)
+        self.instance = basemodel
+        self.system = system
+        self.setWindowTitle("Добавить систему самолета")
+        self.system_edit = QLineEdit()
+        self.spec = SpecComboBox(Spec.select().where(Spec.not_delete == True))
+        self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.form.addRow("Тип самолета", self.plane_type)
+        self.form.addRow("Специальность", self.spec)
+        self.form.addRow("Название системы", self.system_edit)
+        if self.system is not None:
+            self.setWindowTitle("Изменить")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(partial(self.delete, self.system))
+
+    def add(self):
+        system = PlaneSystem()
+        system.name = self.system_edit.text()
+        system.typeId = self.planeType.currentData(role=Qt.ItemDataRole.UserRole)
+        system.specId = self.spec.currentData(role=Qt.ItemDataRole.UserRole)
+        system.save()
+        self.accept()
+
+    def load(self):
+        self.system_edit.setText(self.system.name)
+        self.spec.setCurrentIndex(self.spec.findData(self.system.specId, role=Qt.ItemDataRole.UserRole))
+        self.plane_type.setCurrentIndex(self.plane_type.findData(self.system.typeId, role=Qt.ItemDataRole.UserRole))
+
+    def save(self):
+        self.system.name = self.system_edit.text()
+        self.system.specId = self.spec.currentData(role=Qt.ItemDataRole.UserRole)
+        self.system.typeId = self.plane_type.currentData(role=Qt.ItemDataRole.UserRole)
+        self.system.save()
         self.accept()

@@ -72,6 +72,11 @@ class UnitComboBox(MyComboBox):
         super().__init__(query, parent)
 
 
+class SpecComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+
 class RemZavComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)

@@ -1,7 +1,10 @@
-from PyQt6.QtWidgets import QTableView
+from tkinter.tix import ResizeHandle
+
+from PyQt6.QtWidgets import QTableView, QHeaderView
 from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyModel
 from PyQt6.QtGui import QBrush, QColor
 from peewee import reraise
+
 
 from database.models import *
 import datetime
@@ -28,9 +31,9 @@ class AllTableModel(QAbstractTableModel):
             data = self._dataset[index.row()]
             col = index.column()
             if col == 0:
-                return f'{data.name}'
-            elif col == 1:
                 return f'{data.id}'
+            elif col == 1:
+                return f'{data.name}'
 
     def headerData(self, section, orientation, role=...):
         if role == Qt.ItemDataRole.DisplayRole:
@@ -51,7 +54,7 @@ class AllTableView(QTableView):
         self.query = basemodel.select().where(basemodel.not_delete == True)
         self.model = AllTableModel(basemodel=basemodel, header=header, query=self.query)
         self.setModel(self.model)
-        self.hideColumn(1)
+        self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)
 
 
@@ -174,6 +177,8 @@ class LCTableView(QTableView):
         self.hideColumn(6)
         self.setColumnWidth(5, 200)
         self.verticalHeader().setDefaultSectionSize(75)
+        self.horizontalHeader().setSectionResizeMode(4, QHeaderView.ResizeMode.Stretch)
+        self.horizontalHeader().setSectionResizeMode(5, QHeaderView.ResizeMode.Stretch)
 
 
 class PlaneTableModel(QAbstractTableModel):
@@ -194,9 +199,9 @@ class PlaneTableModel(QAbstractTableModel):
             plane = self._dataset[index.row()]
             col = index.column()
             if col == 0:
-                return f'{PlaneType.get_by_id(plane.planeType).name}'
+                return f'{PlaneType.get_by_id(plane.typeId).name}'
             elif col == 1:
-                return f'{Unit.get_by_id(plane.unit).name}'
+                return f'{Unit.get_by_id(plane.plane_type).name}'
             elif col == 2:
                 return f'{plane.name}'
             elif col == 3:
@@ -263,6 +268,8 @@ class PlaneTableView(QTableView):
         self.hideColumn(10)
         # self.setColumnWidth(5, 200)
         self.verticalHeader().setDefaultSectionSize(90)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
+        self.horizontalHeader().setSectionResizeMode(9, QHeaderView.ResizeMode.Stretch)
 
 
 class PlaneTypeTableModel(AllTableModel):
@@ -330,3 +337,97 @@ class IspravnostPlaneTableView(QTableView):
         self.setModel(self.model)
         self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)
+
+
+class SystemPlaneTableModel(QAbstractTableModel):
+    def __init__(self, plane: Plane, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.plane = plane
+        self._dataset = PlaneSystem.select().where(PlaneSystem.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 4
+
+    def headerData(self, section, orientation, role=...):
+        if orientation == Qt.Orientation.Horizontal:
+            return ["ID", "Тип самолета", "Специальность", "Система"]
+        elif orientation == Qt.Orientation.Vertical:
+            return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            system = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return system.id
+            elif col == 1:
+                return system.typeId.name
+            elif col == 2:
+                return system.specId.name
+            elif col == 3:
+                return system.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = PlaneSystem.select().where(PlaneSystem.not_delete == True)
+        self.endResetModel()
+
+
+class SystemPlaneTableView(QTableView):
+    def __init__(self, plane, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = IspravnostPlaneTableModel(plane)
+        self.setModel(self.model)
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)
+
+
+class OsobPlaneTableModel(QAbstractTableModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataset = OsobPlane.select().where(OsobPlane.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 3
+
+    def headerData(self, section, orientation, role=...):
+        if orientation == Qt.Orientation.Horizontal:
+            return ["ID", "Тип самолета", "Особенность"]
+        elif orientation == Qt.Orientation.Vertical:
+            return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            osob = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return osob.id
+            elif col == 1:
+                return osob.planeType.name
+            elif col == 2:
+                return osob.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = OsobPlane.select().where(OsobPlane.not_delete == True)
+        self.endResetModel()
+
+
+class OsobPlaneTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = OsobPlaneTableModel()
+        self.setModel(self.model)
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)
+

@@ -114,44 +114,36 @@ class ListControlExec(BaseModel):
 
 
 class PlaneSystem(BaseModel):
-    planeType = ForeignKeyField(PlaneType)
+    typeId = ForeignKeyField(PlaneType)
     specId = ForeignKeyField(Spec, backref='lcexec')
     name = CharField(max_length=100, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'plane_systems'
 
 
-class PlaneAgregate(BaseModel):
+class AgregateList(BaseModel):
     planeSystem = ForeignKeyField(PlaneSystem)
     name = CharField(max_length=100, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
-        db_table = 'plane_agregates'
+        db_table = 'agregates_list'
 
 
 class AgregateState(BaseModel):
     name = CharField(max_length=100, null=False)
+    not_delete = BooleanField(default=True)
 
     class Meta:
         db_table = 'agregate_states'
 
 
 class Agregate(BaseModel):
-    planeAgregate = ForeignKeyField(PlaneAgregate)
+    planeAgregate = ForeignKeyField(AgregateList)
     zavNum = CharField(max_length=100, null=True)
-    dateVyp = DateField
-    planeId = ForeignKeyField(Plane)
-    state = ForeignKeyField(AgregateState)
-
-    class Meta:
-        db_table = 'agregates'
-
-
-class AgregateOnPlane(BaseModel):
-    planeAgregate = ForeignKeyField(PlaneAgregate)
-    zavNum = CharField(max_length=100, null=True)
-    dateVyp = DateField
+    dateVyp = DateField(null=True)
     planeId = ForeignKeyField(Plane)
     state = ForeignKeyField(AgregateState)
 
@@ -163,7 +155,7 @@ def create_tables():
     with db:
         db.create_tables(
             [
-                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, PlaneAgregate,
-                AgregateOnPlane, OsobPlane, AgregateState, RemZav, RemType, VypZav
+                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, AgregateList,
+                OsobPlane, AgregateState, RemZav, RemType, VypZav, Agregate
             ]
         )

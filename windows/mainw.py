@@ -5,7 +5,7 @@ from PyQt6.QtWidgets import QWidget, QMainWindow, QMenu, QHBoxLayout, QStackedWi
 
 from windows.lc import ListLC
 from windows.leftdock import *
-from windows.lists import PlaneTableView, UnitList, PlaneTypeList, OsobList
+from windows.lists import PlaneTableView, UnitList, PlaneTypeList, OsobList, ZavodIzg
 from windows.adds import AddPlane, AddSystem
 from windows.ispravnost import *
 from database.models import *
@@ -36,7 +36,7 @@ class MainWindow(QMainWindow):
         self.plane_menu.addAction(self.osob_plane_menu)
 
         self.vypZav_menu = QAction("Заводы изготовители", parent=self)
-        # self.vypZav_menu.triggered.connect(self.open_vypZav)
+        self.vypZav_menu.triggered.connect(self.open_vypZav)
         self.plane_menu.addAction(self.vypZav_menu)
 
         self.rem_zav_menu = QAction("Ремонтные заводы", parent=self)
@@ -114,9 +114,9 @@ class MainWindow(QMainWindow):
     def open_osobs():
         OsobList().exec()
 
-    # @staticmethod
-    # def open_vypZav():
-    #     Lists(title="Заводы изготовители", basemodel=VypZav, header=["Завод", ""], table=None).exec()
+    @staticmethod
+    def open_vypZav():
+        ZavodIzg().exec()
     #
     # @staticmethod
     # def open_specs():

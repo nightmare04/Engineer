@@ -431,3 +431,45 @@ class OsobPlaneTableView(QTableView):
         self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)
 
+
+class ZavodIzgTableModel(QAbstractTableModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataset = VypZav.select().where(VypZav.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 2
+
+    def headerData(self, section, orientation, role=...):
+        if orientation == Qt.Orientation.Horizontal:
+            return ["ID", "Завод изготовитель"]
+        elif orientation == Qt.Orientation.Vertical:
+            return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            zavod_izg = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return zavod_izg.id
+            elif col == 1:
+                return zavod_izg.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = VypZav.select().where(VypZav.not_delete == True)
+        self.endResetModel()
+
+
+class ZavodIzgTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = ZavodIzgTableModel()
+        self.setModel(self.model)
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)

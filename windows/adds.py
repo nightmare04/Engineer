@@ -32,6 +32,7 @@ class Adds(QDialog):
         self.btn_ok.clicked.connect(self.add)
         self.btn_cancel.clicked.connect(self.reject)
 
+
 class AddUnit(Adds):
     def __init__(self, unit: Unit = None, parent=None):
         super().__init__(parent)
@@ -42,7 +43,7 @@ class AddUnit(Adds):
         if unit is not None:
             self.setWindowTitle("Изменить подразделение")
             self.btn_del = QPushButton("Удалить")
-            self.btn_del.clicked.connect(self.remove)
+            self.btn_del.clicked.connect(self.delete)
             self.btnlayout.addWidget(self.btn_del)
 
             self.btn_ok.setText("Сохранить")
@@ -67,7 +68,7 @@ class AddUnit(Adds):
     def load(self):
         self.unit_name.setText(self.unit.name)
 
-    def remove(self):
+    def delete(self):
         self.unit.not_delete = False
         self.unit.save()
         self.accept()
@@ -83,7 +84,7 @@ class AddPlaneType(Adds):
         if plane_type is not None:
             self.setWindowTitle("Изменить тип самолета")
             self.btn_del = QPushButton("Удалить")
-            self.btn_del.clicked.connect(self.remove)
+            self.btn_del.clicked.connect(self.delete)
             self.btnlayout.addWidget(self.btn_del)
 
             self.btn_ok.setText("Сохранить")
@@ -108,11 +109,10 @@ class AddPlaneType(Adds):
     def load(self):
         self.type_name.setText(self.plane_type.name)
 
-    def remove(self):
+    def delete(self):
         self.plane_type.not_delete = False
         self.plane_type.save()
         self.accept()
-
 
 
 class AddPlane(Adds):
@@ -121,7 +121,6 @@ class AddPlane(Adds):
         self.instance = basemodel
         self.plane = plane
         self.setWindowTitle("Добавить самолет")
-
         self.planeType_combobox = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
         self.unit_combobox = UnitComboBox(Unit.select().where(Unit.not_delete == True))
         self.bortNum = QLineEdit()
@@ -153,7 +152,7 @@ class AddPlane(Adds):
 
             self.btn_del = QPushButton("Удалить")
             self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(partial(self.delete, self.plane))
+            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         plane = Plane()
@@ -186,7 +185,6 @@ class AddPlane(Adds):
     def load(self):
         self.bortNum.setText(self.plane.name)
         self.zavNum.setText(self.plane.zavNum)
-
         self.planeType_combobox.setCurrentIndex(self.planeType_combobox.findData(str(self.plane.planeType)))
         self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(self.plane.unit)))
         self.bortNum.setText(self.plane.name)
@@ -218,6 +216,11 @@ class AddPlane(Adds):
         self.plane.save()
         self.accept()
 
+    def delete(self):
+        self.plane.not_delete = False
+        self.plane.save()
+        self.accept()
+
 
 class AddOsob(Adds):
     def __init__(self,  osob: OsobPlane = None, parent=None):
@@ -234,7 +237,6 @@ class AddOsob(Adds):
             self.btn_ok.clicked.disconnect()
             self.btn_ok.clicked.connect(self.save)
             self.load()
-
             self.btn_del = QPushButton("Удалить")
             self.btnlayout.addWidget(self.btn_del)
             self.btn_del.clicked.connect(self.delete)
@@ -283,7 +285,7 @@ class AddSystem(Adds):
 
             self.btn_del = QPushButton("Удалить")
             self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(partial(self.delete, self.system))
+            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         system = PlaneSystem()
@@ -303,4 +305,46 @@ class AddSystem(Adds):
         self.system.specId = self.spec.currentData(role=Qt.ItemDataRole.UserRole)
         self.system.typeId = self.plane_type.currentData(role=Qt.ItemDataRole.UserRole)
         self.system.save()
+        self.accept()
+
+    def delete(self):
+        self.system.not_delete = False
+        self.system.save()
+        self.accept()
+
+
+class AddZavodIzg(Adds):
+    def __init__(self, zavod_izg: VypZav = None, parent=None):
+        super().__init__(parent)
+        self.zavod_izg = zavod_izg
+        self.setWindowTitle("Добавить завод изготовитель")
+        self.zavod_izg_edit = QLineEdit()
+        self.form.addRow("Завод изготовитель", self.zavod_izg_edit)
+        if self.zavod_izg is not None:
+            self.setWindowTitle("Изменить")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(self.delete)
+
+    def add(self):
+        zavod_izg = VypZav()
+        zavod_izg.name = self.zavod_izg_edit.text()
+        zavod_izg.save()
+        self.accept()
+
+    def load(self):
+        self.zavod_izg_edit.setText(self.zavod_izg.name)
+
+    def save(self):
+        self.zavod_izg.name = self.zavod_izg_edit.text()
+        self.zavod_izg.save()
+        self.accept()
+
+    def delete(self):
+        self.zavod_izg.not_delete = False
+        self.zavod_izg.save()
         self.accept()

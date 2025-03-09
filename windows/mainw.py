@@ -45,7 +45,7 @@ class MainWindow(QMainWindow):
         self.plane_menu.addAction(self.remType_menu)
 
         self.planes_menu = QAction("Список самолетов", parent=self)
-        # self.planes_menu.triggered.connect(self.open_planes)
+        self.planes_menu.triggered.connect(self.open_planes)
         self.plane_menu.addAction(self.planes_menu)
 
         self.units_menu = QAction("Подразделения", parent=self)
@@ -57,7 +57,7 @@ class MainWindow(QMainWindow):
         self.unit_menu.addAction(self.spec_menu)
 
         self.system_menu = QAction("Системы", parent=self)
-        # self.system_menu.triggered.connect(self.open_systems)
+        self.system_menu.triggered.connect(self.open_systems)
         self.agregate_menu.addAction(self.system_menu)
 
         self.agregates_menu = QAction("Блоки/Агрегаты", parent=self)
@@ -93,8 +93,9 @@ class MainWindow(QMainWindow):
         self.leftDock.btnLC.clicked.connect(lambda: self.stack.setCurrentWidget(self.lcWidget))
         self.leftDock.btnIspr.clicked.connect(lambda: self.stack.setCurrentWidget(self.ispravnost))
 
-    def open_systems(self):
-        pass
+    @staticmethod
+    def open_systems():
+        PlaneSystemList().exec()
 
     def open_agregates(self):
         pass
@@ -118,11 +119,10 @@ class MainWindow(QMainWindow):
     @staticmethod
     def open_specs():
         SpecList().exec()
-    #
-    # def open_planes(self):
-    #     Lists("Самолеты", basemodel=Plane, add_form=AddPlane, table=PlaneTableView).exec()
-    #     self.lcWidget.filterPlaneCombo.model.updateData(Plane.select().where(Plane.not_delete == True))
-    #
+
+    def open_planes(self):
+        PlaneList().exec()
+        self.lcWidget.filterPlaneCombo.model.updateData(Plane.select().where(Plane.not_delete == True))
 
     @staticmethod
     def open_remZav():

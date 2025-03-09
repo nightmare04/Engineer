@@ -142,3 +142,39 @@ class RemTypeList(ListAll):
     def add(self):
         AddTypeRem().exec()
         self.table.model.updateData()
+
+
+class PlaneSystemList(ListAll):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Список систем самолета")
+        self.table = PlaneSystemTableView()
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
+
+    def edit(self, item):
+        edit_item = PlaneSystem.get_by_id(item.siblingAtColumn(0).data())
+        AddPlaneSystem(edit_item).exec()
+        self.table.model.updateData()
+
+    def add(self):
+        AddPlaneSystem().exec()
+        self.table.model.updateData()
+
+
+class PlaneList(ListAll):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Список самолетов")
+        self.table = PlaneTableView()
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
+
+    def edit(self, item):
+        edit_item = PlaneSystem.get_by_id(item.siblingAtColumn(0).data())
+        AddPlane(edit_item).exec()
+        self.table.model.updateData()
+
+    def add(self):
+        AddPlane().exec()
+        self.table.model.updateData()

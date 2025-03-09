@@ -179,9 +179,9 @@ class LCTableView(QTableView):
 
 
 class PlaneTableModel(QAbstractTableModel):
-    def __init__(self, query, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._dataset = query
+        self._dataset = Plane.select().where(Plane.not_delete == True)
 
     def columnCount(self, parent=...):
         return 11
@@ -198,7 +198,7 @@ class PlaneTableModel(QAbstractTableModel):
             if col == 0:
                 return f'{PlaneType.get_by_id(plane.typeId).name}'
             elif col == 1:
-                return f'{Unit.get_by_id(plane.plane_type).name}'
+                return f'{Unit.get_by_id(plane.typeId).name}'
             elif col == 2:
                 return f'{plane.name}'
             elif col == 3:
@@ -245,19 +245,17 @@ class PlaneTableModel(QAbstractTableModel):
             else:
                 return f'{section + 1}'
 
-    def updateData(self, query):
+    def updateData(self):
         self.beginResetModel()
-        self._dataset = query
+        self._dataset = Plane.select().where(Plane.not_delete == True)
         self.endResetModel()
 
 
 class PlaneTableView(QTableView):
-    def __init__(self, header, basemodel, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.head = header
-        self.instance = basemodel
         self.query = Plane.select().where(Plane.not_delete == True)
-        self.model = PlaneTableModel(query=self.query)
+        self.model = PlaneTableModel()
         self.proxy_model = QSortFilterProxyModel()
         self.proxy_model.setSourceModel(self.model)
         self.proxy_model.setFilterKeyColumn(5)
@@ -429,7 +427,7 @@ class OsobPlaneTableModel(QAbstractTableModel):
             if col == 0:
                 return osob.id
             elif col == 1:
-                return osob.planeType.name
+                return osob.typeId.name
             elif col == 2:
                 return osob.name
 
@@ -526,7 +524,7 @@ class RemTypeTableModel(QAbstractTableModel):
             if col == 0:
                 return rem_type.id
             elif col == 1:
-                return rem_type.planeType.name
+                return rem_type.typeId.name
             elif col == 2:
                 return rem_type.name
 
@@ -540,6 +538,59 @@ class RemTypeTableView(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = RemTypeTableModel()
+        self.setModel(self.model)
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)
+
+
+class PlaneSystemTableModel(QAbstractTableModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataset = PlaneSystem.select().where(PlaneSystem.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 4
+
+    def headerData(self, section, orientation, role=...):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Тип самолета",
+                    2: "Специальность",
+                    3: "Система"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            plane_system = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return plane_system.id
+            elif col == 1:
+                return plane_system.typeId.name
+            elif col == 2:
+                return plane_system.specId.name
+            elif col == 3:
+                return plane_system.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = PlaneSystem.select().where(PlaneSystem.not_delete == True)
+        self.endResetModel()
+
+
+class PlaneSystemTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = PlaneSystemTableModel()
         self.setModel(self.model)
         self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)

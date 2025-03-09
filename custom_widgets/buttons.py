@@ -11,7 +11,7 @@ class PlaneBtn(QPushButton):
         self.plane = plane
         self.lc = lc
         if len(PlaneType.select().where(PlaneType.not_delete == True)) > 1:
-            name_btn = f'{self.plane.planeType.name}\n{self.plane.name}'
+            name_btn = f'{self.plane.typeId.name}\n{self.plane.name}'
             super().__init__(name_btn, parent)
         else:
             super().__init__(self.plane.name, parent)

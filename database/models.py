@@ -60,7 +60,7 @@ class VypZav(BaseModel):
 
 
 class Plane(BaseModel):
-    planeType = ForeignKeyField(PlaneType, backref='planes')
+    typeId = ForeignKeyField(PlaneType, backref='planes')
     zavNum = CharField(max_length=30, null=False)
     name = CharField(max_length=10, null=False)
     dateVyp = DateField()
@@ -78,7 +78,7 @@ class Plane(BaseModel):
 
 class RemType(BaseModel):
     name = CharField(max_length=30, null=False)
-    planeType = ForeignKeyField(PlaneType)
+    typeId = ForeignKeyField(PlaneType)
     not_delete = BooleanField(default=True)
 
     class Meta:
@@ -86,7 +86,7 @@ class RemType(BaseModel):
 
 
 class OsobPlane(BaseModel):
-    planeType = ForeignKeyField(PlaneType)
+    typeId = ForeignKeyField(PlaneType)
     name = CharField(max_length=30, null=False)
     not_delete = BooleanField(default=True)
 

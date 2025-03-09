@@ -1,14 +1,11 @@
-from PyQt6.QtGui import QAction
 from PyQt6.QtCore import QRect
-from PyQt6.QtSql import QSqlTableModel
-from PyQt6.QtWidgets import QWidget, QMainWindow, QMenu, QHBoxLayout, QStackedWidget, QFrame, QMenuBar
+from PyQt6.QtGui import QAction
+from PyQt6.QtWidgets import QMainWindow, QMenu, QStackedWidget, QFrame, QMenuBar
 
+from windows.ispravnost import *
 from windows.lc import ListLC
 from windows.leftdock import *
-from windows.lists import PlaneTableView, UnitList, PlaneTypeList, OsobList, ZavodIzg
-from windows.adds import AddPlane, AddSystem
-from windows.ispravnost import *
-from database.models import *
+from windows.lists import *
 
 
 class MainWindow(QMainWindow):
@@ -40,11 +37,11 @@ class MainWindow(QMainWindow):
         self.plane_menu.addAction(self.vypZav_menu)
 
         self.rem_zav_menu = QAction("Ремонтные заводы", parent=self)
-        # self.rem_zav_menu.triggered.connect(self.open_remZav)
+        self.rem_zav_menu.triggered.connect(self.open_remZav)
         self.plane_menu.addAction(self.rem_zav_menu)
 
         self.remType_menu = QAction("Типы ремонта", parent=self)
-        # self.remType_menu.triggered.connect(self.open_remType)
+        self.remType_menu.triggered.connect(self.open_remType)
         self.plane_menu.addAction(self.remType_menu)
 
         self.planes_menu = QAction("Список самолетов", parent=self)
@@ -56,7 +53,7 @@ class MainWindow(QMainWindow):
         self.unit_menu.addAction(self.units_menu)
 
         self.spec_menu = QAction("Специальности", parent=self)
-        # self.spec_menu.triggered.connect(self.open_specs)
+        self.spec_menu.triggered.connect(self.open_specs)
         self.unit_menu.addAction(self.spec_menu)
 
         self.system_menu = QAction("Системы", parent=self)
@@ -116,21 +113,22 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def open_vypZav():
-        ZavodIzg().exec()
-    #
-    # @staticmethod
-    # def open_specs():
-    #     Lists(title="Специальности", basemodel=Spec, header=["Специальность", ""], table=None).exec()
+        ZavodIzgList().exec()
+
+    @staticmethod
+    def open_specs():
+        SpecList().exec()
     #
     # def open_planes(self):
     #     Lists("Самолеты", basemodel=Plane, add_form=AddPlane, table=PlaneTableView).exec()
     #     self.lcWidget.filterPlaneCombo.model.updateData(Plane.select().where(Plane.not_delete == True))
     #
-    # @staticmethod
-    # def open_remZav():
-    #     Lists(title="Заводы изготовители", basemodel=RemZav, header=["Завод", ""], table=None).exec()
-    #
-    # @staticmethod
-    # def open_remType():
-    #     Lists(title="Тип ремонта", basemodel=RemType, header=["Наименование", ""], table=None).exec()
+
+    @staticmethod
+    def open_remZav():
+        ZavodRemList().exec()
+
+    @staticmethod
+    def open_remType():
+        RemTypeList().exec()
 

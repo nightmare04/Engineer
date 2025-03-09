@@ -1,13 +1,5 @@
-from PyQt6.QtCore import QSize, Qt
-from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, QTableView
-
-from custom_widgets.buttons import *
 from custom_widgets.tables import *
-from custom_widgets.combobox import *
-from database.models import *
 from windows.adds import *
-from peewee import *
-from functools import partial
 
 
 class ListAll(QDialog):
@@ -80,11 +72,11 @@ class OsobList(ListAll):
         self.table.model.updateData()
 
 
-class ZavodIzg(ListAll):
+class ZavodIzgList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список заводов изготовителей")
-        self.table = ZavodIzgTableView()
+        self.table = AllTableView(["", "Завод"], VypZav)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
@@ -95,4 +87,58 @@ class ZavodIzg(ListAll):
 
     def add(self):
         AddZavodIzg().exec()
+        self.table.model.updateData()
+
+
+class ZavodRemList(ListAll):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Список ремонтных заводов")
+        self.table = AllTableView(["", "Завод"], RemZav)
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
+
+    def edit(self, item):
+        edit_item = RemZav.get_by_id(item.siblingAtColumn(0).data())
+        AddZavodRem(edit_item).exec()
+        self.table.model.updateData()
+
+    def add(self):
+        AddZavodRem().exec()
+        self.table.model.updateData()
+
+
+class SpecList(ListAll):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Специальности")
+        self.table = AllTableView(["", "Специальность"], Spec)
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
+
+    def edit(self, item):
+        edit_item = Spec.get_by_id(item.siblingAtColumn(0).data())
+        AddSpec(edit_item).exec()
+        self.table.model.updateData()
+
+    def add(self):
+        AddSpec().exec()
+        self.table.model.updateData()
+
+
+class RemTypeList(ListAll):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Список типов ремонта")
+        self.table = RemTypeTableView()
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
+
+    def edit(self, item):
+        edit_item = RemType.get_by_id(item.siblingAtColumn(0).data())
+        AddTypeRem(edit_item).exec()
+        self.table.model.updateData()
+
+    def add(self):
+        AddTypeRem().exec()
         self.table.model.updateData()

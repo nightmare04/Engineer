@@ -1,6 +1,5 @@
 import datetime
 from functools import partial
-
 from PyQt6.QtGui import QBrush, QColor
 from PyQt6.QtWidgets import QHBoxLayout, QPushButton, QGroupBox, QGridLayout, QDialog, QVBoxLayout, QWidget, \
     QFormLayout, QLineEdit, QDateEdit, QTextEdit

@@ -1,5 +1,3 @@
-import json
-from PyQt6 import QtSql
 from peewee import *
 from playhouse.sqlite_ext import SqliteExtDatabase, JSONField
 
@@ -80,6 +78,7 @@ class Plane(BaseModel):
 
 class RemType(BaseModel):
     name = CharField(max_length=30, null=False)
+    planeType = ForeignKeyField(PlaneType)
     not_delete = BooleanField(default=True)
 
     class Meta:

@@ -1,13 +1,10 @@
-from tkinter.tix import ResizeHandle
+import datetime
 
-from PyQt6.QtWidgets import QTableView, QHeaderView
-from PyQt6.QtCore import QAbstractTableModel, Qt, QModelIndex, QSortFilterProxyModel
+from PyQt6.QtCore import QAbstractTableModel, Qt, QSortFilterProxyModel
 from PyQt6.QtGui import QBrush, QColor
-from peewee import reraise
-
+from PyQt6.QtWidgets import QTableView, QHeaderView
 
 from database.models import *
-import datetime
 
 
 class AllTableModel(QAbstractTableModel):
@@ -300,12 +297,20 @@ class IspravnostPlaneTableModel(QAbstractTableModel):
         return 6
 
     def headerData(self, section, orientation, role = ...):
-        if orientation == Qt.Orientation.Horizontal:
-            return ["ID", "Специальность", "Система", "Агрегат/Блок", "Заводской номер", "Состояние"]
-        elif orientation == Qt.Orientation.Vertical:
-            return section + 1
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Специальность",
+                    2: "Система",
+                    3: "Агрегат/Блок",
+                    4: "Заводской номер",
+                    5: "Состояние"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
 
-    def data(self, index, role = ...):
+    def data(self, index, role=...):
         if not index.isValid():
             return
         if role == Qt.ItemDataRole.DisplayRole:
@@ -352,10 +357,16 @@ class SystemPlaneTableModel(QAbstractTableModel):
         return 4
 
     def headerData(self, section, orientation, role=...):
-        if orientation == Qt.Orientation.Horizontal:
-            return ["ID", "Тип самолета", "Специальность", "Система"]
-        elif orientation == Qt.Orientation.Vertical:
-            return section + 1
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Тип самолета",
+                    2: "Специальность",
+                    3: "Система"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
 
     def data(self, index, role=...):
         if not index.isValid():
@@ -399,10 +410,15 @@ class OsobPlaneTableModel(QAbstractTableModel):
         return 3
 
     def headerData(self, section, orientation, role=...):
-        if orientation == Qt.Orientation.Horizontal:
-            return ["ID", "Тип самолета", "Особенность"]
-        elif orientation == Qt.Orientation.Vertical:
-            return section + 1
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Тип самолета",
+                    2: "Особенность"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
 
     def data(self, index, role=...):
         if not index.isValid():
@@ -444,10 +460,14 @@ class ZavodIzgTableModel(QAbstractTableModel):
         return 2
 
     def headerData(self, section, orientation, role=...):
-        if orientation == Qt.Orientation.Horizontal:
-            return ["ID", "Завод изготовитель"]
-        elif orientation == Qt.Orientation.Vertical:
-            return section + 1
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Завод изготовитель"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
 
     def data(self, index, role=...):
         if not index.isValid():
@@ -470,6 +490,56 @@ class ZavodIzgTableView(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = ZavodIzgTableModel()
+        self.setModel(self.model)
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)
+
+
+class RemTypeTableModel(QAbstractTableModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataset = RemType.select().where(RemType.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 3
+
+    def headerData(self, section, orientation, role=...):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Тип самолета",
+                    2: "Тип ремонта"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            rem_type = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return rem_type.id
+            elif col == 1:
+                return rem_type.planeType.name
+            elif col == 2:
+                return rem_type.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = RemType.select().where(RemType.not_delete == True)
+        self.endResetModel()
+
+
+class RemTypeTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = RemTypeTableModel()
         self.setModel(self.model)
         self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)

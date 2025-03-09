@@ -1,8 +1,5 @@
-from functools import partial
-
-from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QTableWidget, QTableWidgetItem, \
-    QFormLayout, QComboBox, QLineEdit, QCheckBox, QDateEdit
 from PyQt6.QtCore import Qt
+from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QFormLayout, QLineEdit, QDateEdit
 
 from custom_widgets.buttons import OsobBtn
 from custom_widgets.combobox import (TypePlaneComboBox, UnitComboBox, RemZavComboBox, VypZavComboBox, RemTypeComboBox,
@@ -348,3 +345,122 @@ class AddZavodIzg(Adds):
         self.zavod_izg.not_delete = False
         self.zavod_izg.save()
         self.accept()
+
+
+class AddZavodRem(Adds):
+    def __init__(self, zavod_rem: RemZav = None, parent=None):
+        super().__init__(parent)
+        self.zavod_rem = zavod_rem
+        self.setWindowTitle("Добавить ремонтный завод")
+        self.zavod_rem_edit = QLineEdit()
+        self.form.addRow("Ремонтный завод", self.zavod_rem_edit)
+        if self.zavod_rem is not None:
+            self.setWindowTitle("Изменить")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(self.delete)
+
+    def add(self):
+        zavod_rem = RemZav()
+        zavod_rem.name = self.zavod_rem_edit.text()
+        zavod_rem.save()
+        self.accept()
+
+    def load(self):
+        self.zavod_rem_edit.setText(self.zavod_rem.name)
+
+    def save(self):
+        self.zavod_rem.name = self.zavod_rem_edit.text()
+        self.zavod_rem.save()
+        self.accept()
+
+    def delete(self):
+        self.zavod_rem.not_delete = False
+        self.zavod_rem.save()
+        self.accept()
+
+
+class AddSpec(Adds):
+    def __init__(self, spec: Spec = None, parent=None):
+        super().__init__(parent)
+        self.spec = spec
+        self.setWindowTitle("Добавить специальность")
+        self.spec_edit = QLineEdit()
+        self.form.addRow("Специальность", self.spec_edit)
+        if self.spec is not None:
+            self.setWindowTitle("Изменить")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(self.delete)
+
+    def add(self):
+        spec = Spec()
+        spec.name = self.spec_edit.text()
+        spec.save()
+        self.accept()
+
+    def load(self):
+        self.spec_edit.setText(self.spec.name)
+
+    def save(self):
+        self.spec.name = self.spec_edit.text()
+        self.spec.save()
+        self.accept()
+
+    def delete(self):
+        self.spec.not_delete = False
+        self.spec.save()
+        self.accept()
+
+
+class AddTypeRem(Adds):
+    def __init__(self, type_rem: RemType = None, parent=None):
+        super().__init__(parent)
+        self.type_rem = type_rem
+        self.setWindowTitle("Добавить тип ремонта")
+        self.type_rem_edit = QLineEdit()
+        self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.form.addRow("Тип самолета", self.plane_type)
+        self.form.addRow("&Наименование", self.type_rem_edit)
+        if self.type_rem is not None:
+            self.setWindowTitle("Изменить")
+            self.btn_ok.setText("Сохранить")
+            self.btn_ok.clicked.disconnect()
+            self.btn_ok.clicked.connect(self.save)
+            self.load()
+            self.btn_del = QPushButton("Удалить")
+            self.btnlayout.addWidget(self.btn_del)
+            self.btn_del.clicked.connect(self.delete)
+
+    def add(self):
+        type_rem = RemType()
+        type_rem.name = self.type_rem_edit.text()
+        type_rem.planeType = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
+        type_rem.save()
+        self.accept()
+
+    def load(self):
+        self.type_rem_edit.setText(self.type_rem.name)
+        self.plane_type.setCurrentIndex(self.plane_type.findData(self.type_rem.planeType.id))
+
+    def save(self):
+        self.type_rem.name = self.type_rem_edit.text()
+        self.type_rem.planeType = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
+        self.type_rem.save()
+        self.accept()
+
+    def delete(self):
+        self.type_rem.not_delete = False
+        self.type_rem.save()
+        self.accept()
+
+
+

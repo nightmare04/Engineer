@@ -1,3 +1,5 @@
+from PyQt6.QtCore import pyqtSignal
+
 from custom_widgets.tables import *
 from windows.adds import *
 
@@ -76,12 +78,12 @@ class ZavodIzgList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список заводов изготовителей")
-        self.table = AllTableView(["", "Завод"], VypZav)
+        self.table = AllTableView(["", "Завод"], ZavIzg)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
     def edit(self, item):
-        edit_item = VypZav.get_by_id(item.siblingAtColumn(0).data())
+        edit_item = ZavIzg.get_by_id(item.siblingAtColumn(0).data())
         AddZavodIzg(edit_item).exec()
         self.table.model.updateData()
 
@@ -145,6 +147,8 @@ class RemTypeList(ListAll):
 
 
 class PlaneSystemList(ListAll):
+    send_object = pyqtSignal(PlaneSystem)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список систем самолета")
@@ -154,15 +158,25 @@ class PlaneSystemList(ListAll):
 
     def edit(self, item):
         edit_item = PlaneSystem.get_by_id(item.siblingAtColumn(0).data())
-        AddPlaneSystem(edit_item).exec()
+        edit_system = AddSystem()
+        edit_system.update_signal.connect(self.update_table)
+        self.send_object.connect(edit_system.edit)
+        self.send_object.emit(edit_item)
+        edit_system.exec()
+
+    @pyqtSlot()
+    def update_table(self):
         self.table.model.updateData()
 
     def add(self):
-        AddPlaneSystem().exec()
-        self.table.model.updateData()
+        add_system = AddSystem()
+        add_system.update_signal.connect(self.update_table)
+        add_system.exec()
 
 
 class PlaneList(ListAll):
+    send_object = pyqtSignal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список самолетов")
@@ -171,8 +185,11 @@ class PlaneList(ListAll):
         self.table.doubleClicked.connect(self.edit)
 
     def edit(self, item):
-        edit_item = PlaneSystem.get_by_id(item.siblingAtColumn(0).data())
-        AddPlane(edit_item).exec()
+        edit_window = AddPlane()
+        self.send_object.connect(edit_window.edit_plane)
+        edit_item_id = item.siblingAtColumn(0).data()
+        self.send_object.emit(edit_item_id)
+        edit_window.exec()
         self.table.model.updateData()
 
     def add(self):

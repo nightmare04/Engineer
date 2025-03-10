@@ -51,7 +51,7 @@ class RemZav(BaseModel):
         db_table = 'rem_zav'
 
 
-class VypZav(BaseModel):
+class ZavIzg(BaseModel):
     name = CharField(max_length=30, null=False)
     not_delete = BooleanField(default=True)
 
@@ -67,7 +67,7 @@ class Plane(BaseModel):
     dateRem = DateField()
     remType = CharField(max_length=30, null=False)
     remZav = ForeignKeyField(RemZav)
-    vypZav = ForeignKeyField(VypZav)
+    vypZav = ForeignKeyField(ZavIzg)
     osobPlane = JSONField()
     unit = ForeignKeyField(Unit, backref='planes')
     not_delete = BooleanField(default=True)
@@ -155,6 +155,6 @@ def create_tables():
         db.create_tables(
             [
                 ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, AgregateList,
-                OsobPlane, AgregateState, RemZav, RemType, VypZav, Agregate
+                OsobPlane, AgregateState, RemZav, RemType, ZavIzg, Agregate
             ]
         )

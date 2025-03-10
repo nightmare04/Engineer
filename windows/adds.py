@@ -1,11 +1,11 @@
-from PyQt6.QtCore import Qt
+from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
 from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QFormLayout, QLineEdit, QDateEdit
 
 from custom_widgets.buttons import OsobBtn
-from custom_widgets.combobox import (TypePlaneComboBox, UnitComboBox, RemZavComboBox, VypZavComboBox, RemTypeComboBox,
+from custom_widgets.combobox import (TypePlaneComboBox, UnitComboBox, RemZavComboBox, ZavodIzgComboBox, RemTypeComboBox,
                                      SpecComboBox)
 from custom_widgets.groupboxs import OsobGroupBox
-from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, VypZav, OsobPlane, PlaneSystem
+from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, ZavIzg, OsobPlane, PlaneSystem
 
 
 class Adds(QDialog):
@@ -122,7 +122,7 @@ class AddPlane(Adds):
         self.bortNum = QLineEdit()
         self.zavNum = QLineEdit()
         self.dateVyp = QDateEdit()
-        self.vypZav = VypZavComboBox(VypZav.select().where(VypZav.not_delete == True))
+        self.vypZav = ZavodIzgComboBox(ZavIzg.select().where(ZavIzg.not_delete == True))
         self.dateRem = QDateEdit()
         self.remZav = RemZavComboBox(RemZav.select().where(RemZav.not_delete == True))
         self.remType = RemTypeComboBox(RemType.select().where(RemType.not_delete == True))
@@ -139,16 +139,19 @@ class AddPlane(Adds):
         self.form.addRow("Вид ремонта", self.remType)
         self.form.addRow("Особенности самолета", self.osobPlane)
 
-        if self.plane is not None:
-            self.setWindowTitle("Изменить самолет")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.update_plane)
-            self.load()
+        self.planeType_combobox.setFocus()
 
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
+    @pyqtSlot(str)
+    def edit_plane(self, plane_id):
+        self.plane = Plane.get_by_id(plane_id)
+        self.load()
+        self.setWindowTitle("Изменить самолет")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.update_plane)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         plane = Plane()
@@ -261,10 +264,11 @@ class AddOsob(Adds):
 
 
 class AddSystem(Adds):
-    def __init__(self, basemodel, system: PlaneSystem = None, parent=None):
+    update_signal = pyqtSignal()
+
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.instance = basemodel
-        self.system = system
+        self.system = PlaneSystem()
         self.setWindowTitle("Добавить систему самолета")
         self.system_edit = QLineEdit()
         self.spec = SpecComboBox(Spec.select().where(Spec.not_delete == True))
@@ -272,45 +276,52 @@ class AddSystem(Adds):
         self.form.addRow("Тип самолета", self.plane_type)
         self.form.addRow("Специальность", self.spec)
         self.form.addRow("Название системы", self.system_edit)
-        if self.system is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
+        self.system_edit.setFocus()
 
     def add(self):
         system = PlaneSystem()
         system.name = self.system_edit.text()
-        system.typeId = self.planeType.currentData(role=Qt.ItemDataRole.UserRole)
+        system.typeId = self.plane_type.currentData(role=Qt.ItemDataRole.UserRole)
         system.specId = self.spec.currentData(role=Qt.ItemDataRole.UserRole)
         system.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(PlaneSystem)
+    def edit(self, system):
+        self.system = system
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
+        self.system_edit.setFocus()
 
     def load(self):
         self.system_edit.setText(self.system.name)
-        self.spec.setCurrentIndex(self.spec.findData(self.system.specId, role=Qt.ItemDataRole.UserRole))
-        self.plane_type.setCurrentIndex(self.plane_type.findData(self.system.typeId, role=Qt.ItemDataRole.UserRole))
+        self.spec.setCurrentIndex(self.spec.findData(self.system.specId.id, role=Qt.ItemDataRole.UserRole))
+        self.plane_type.setCurrentIndex(self.plane_type.findData(self.system.typeId.id, role=Qt.ItemDataRole.UserRole))
 
     def save(self):
         self.system.name = self.system_edit.text()
         self.system.specId = self.spec.currentData(role=Qt.ItemDataRole.UserRole)
         self.system.typeId = self.plane_type.currentData(role=Qt.ItemDataRole.UserRole)
         self.system.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.system.not_delete = False
         self.system.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddZavodIzg(Adds):
-    def __init__(self, zavod_izg: VypZav = None, parent=None):
+    def __init__(self, zavod_izg: ZavIzg = None, parent=None):
         super().__init__(parent)
         self.zavod_izg = zavod_izg
         self.setWindowTitle("Добавить завод изготовитель")
@@ -327,7 +338,7 @@ class AddZavodIzg(Adds):
             self.btn_del.clicked.connect(self.delete)
 
     def add(self):
-        zavod_izg = VypZav()
+        zavod_izg = ZavIzg()
         zavod_izg.name = self.zavod_izg_edit.text()
         zavod_izg.save()
         self.accept()
@@ -460,51 +471,3 @@ class AddTypeRem(Adds):
         self.type_rem.not_delete = False
         self.type_rem.save()
         self.accept()
-
-
-class AddPlaneSystem(Adds):
-    def __init__(self, plane_system: PlaneSystem = None, parent=None):
-        super().__init__(parent)
-        self.plane_system = plane_system
-        self.setWindowTitle("Добавить систему самолета")
-        self.system_edit = QLineEdit()
-        self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
-        self.spec_cb = SpecComboBox(Spec.select().where(Spec.not_delete == True))
-        self.form.addRow("Тип самолета", self.plane_type)
-        self.form.addRow("Специальность", self.spec_cb)
-        self.form.addRow("&Наименование", self.system_edit)
-        if self.plane_system is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
-
-    def add(self):
-        plane_system = PlaneSystem()
-        plane_system.name = self.system_edit.text()
-        plane_system.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
-        plane_system.specId = self.spec_cb.currentData(Qt.ItemDataRole.UserRole)
-        plane_system.save()
-        self.accept()
-
-    def load(self):
-        self.system_edit.setText(self.plane_system.name)
-        self.plane_type.setCurrentIndex(self.plane_type.findData(self.plane_system.typeId.id))
-        self.spec_cb.setCurrentIndex(self.spec_cb.findData(self.plane_system.specId.id))
-
-    def save(self):
-        self.plane_system.name = self.system_edit.text()
-        self.plane_system.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
-        self.plane_system.specId = self.spec_cb.currentData(Qt.ItemDataRole.UserRole)
-        self.plane_system.save()
-        self.accept()
-
-    def delete(self):
-        self.plane_system.not_delete = False
-        self.plane_system.save()
-        self.accept()
-

@@ -196,27 +196,27 @@ class PlaneTableModel(QAbstractTableModel):
             plane = self._dataset[index.row()]
             col = index.column()
             if col == 0:
-                return f'{PlaneType.get_by_id(plane.typeId).name}'
-            elif col == 1:
-                return f'{Unit.get_by_id(plane.typeId).name}'
-            elif col == 2:
-                return f'{plane.name}'
-            elif col == 3:
-                return f'{plane.zavNum}'
-            elif col == 4:
-                return f'{plane.dateVyp.strftime("%d.%m.%Y")}'
-            elif col == 5:
-                return f'{VypZav.get_by_id(plane.vypZav).name}'
-            elif col == 6:
-                return f'{plane.dateRem.strftime("%d.%m.%Y")}'
-            elif col == 7:
-                return f'{RemType.get_by_id(plane.remType).name}'
-            elif col == 8:
-                return f'{RemZav.get_by_id(plane.remZav).name}'
-            elif col == 9:
-                return f'{self.osob_to_text(plane.osobPlane)}'
-            elif col == 10:
                 return f'{plane.id}'
+            elif col == 1:
+                return f'{PlaneType.get_by_id(plane.typeId).name}'
+            elif col == 2:
+                return f'{Unit.get_by_id(plane.typeId).name}'
+            elif col == 3:
+                return f'{plane.name}'
+            elif col == 4:
+                return f'{plane.zavNum}'
+            elif col == 5:
+                return f'{plane.dateVyp.strftime("%d.%m.%Y")}'
+            elif col == 6:
+                return f'{ZavIzg.get_by_id(plane.vypZav).name}'
+            elif col == 7:
+                return f'{plane.dateRem.strftime("%d.%m.%Y")}'
+            elif col == 8:
+                return f'{RemType.get_by_id(plane.remType).name}'
+            elif col == 9:
+                return f'{RemZav.get_by_id(plane.remZav).name}'
+            elif col == 10:
+                return f'{self.osob_to_text(plane.osobPlane)}'
 
     @staticmethod
     def osob_to_text(osobs):
@@ -230,17 +230,17 @@ class PlaneTableModel(QAbstractTableModel):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return {
-                    0: "Тип самолета",
-                    1: "Подразделение",
-                    2: "Бортовой номер",
-                    3: "Заводской номер",
-                    4: "Дата выпуска",
-                    5: "Завод изготовитель",
-                    6: "Дата ремонта",
-                    7: "Вид ремонта",
-                    8: "Ремонтный завод",
-                    9: "Особенности самолета",
-                    10: "ID"
+                    0: "ID",
+                    1: "Тип самолета",
+                    2: "Подразделение",
+                    3: "Бортовой номер",
+                    4: "Заводской номер",
+                    5: "Дата выпуска",
+                    6: "Завод изготовитель",
+                    7: "Дата ремонта",
+                    8: "Вид ремонта",
+                    9: "Ремонтный завод",
+                    10: "Особенности самолета"
                 }.get(section)
             else:
                 return f'{section + 1}'
@@ -260,7 +260,7 @@ class PlaneTableView(QTableView):
         self.proxy_model.setSourceModel(self.model)
         self.proxy_model.setFilterKeyColumn(5)
         self.setModel(self.proxy_model)
-        self.hideColumn(10)
+        self.hideColumn(0)
         # self.setColumnWidth(5, 200)
         self.verticalHeader().setDefaultSectionSize(90)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
@@ -449,7 +449,7 @@ class OsobPlaneTableView(QTableView):
 class ZavodIzgTableModel(QAbstractTableModel):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._dataset = VypZav.select().where(VypZav.not_delete == True)
+        self._dataset = ZavIzg.select().where(ZavIzg.not_delete == True)
 
     def rowCount(self, parent=...):
         return len(self._dataset)
@@ -480,7 +480,7 @@ class ZavodIzgTableModel(QAbstractTableModel):
 
     def updateData(self):
         self.beginResetModel()
-        self._dataset = VypZav.select().where(VypZav.not_delete == True)
+        self._dataset = ZavIzg.select().where(ZavIzg.not_delete == True)
         self.endResetModel()
 
 

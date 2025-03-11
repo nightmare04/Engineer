@@ -5,6 +5,8 @@ from windows.adds import *
 
 
 class ListAll(QDialog):
+    send = pyqtSignal(str)
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(500, 500)
@@ -19,59 +21,59 @@ class ListAll(QDialog):
         self.btnLayout.addWidget(self.btnOk)
         self.btnLayout.addWidget(self.btnAdd)
 
+    def edit(self, item):
+        edit_item_id = item.siblingAtColumn(0).data()
+        self.send.emit(edit_item_id)
+        self.edit_window.exec()
+
+    def add(self):
+        self.edit_window.exec()
+
+    @pyqtSlot()
+    def update_table(self):
+        self.table.model.updateData()
+
 
 class UnitList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список подразделений")
+
         self.table = AllTableView(["", "Подразделения"], Unit)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = Unit.get_by_id(item.siblingAtColumn(0).data())
-        AddUnit(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddUnit().exec()
-        self.table.model.updateData()
+        self.edit_window = AddUnit()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class PlaneTypeList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список типов самолетов")
+
         self.table = AllTableView(["", "Тип"], PlaneType)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = PlaneType.get_by_id(item.siblingAtColumn(0).data())
-        AddPlaneType(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddPlaneType().exec()
-        self.table.model.updateData()
+        self.edit_window = AddPlaneType()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class OsobList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список особенностей самолетов")
+
         self.table = OsobPlaneTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = OsobPlane.get_by_id(item.siblingAtColumn(0).data())
-        AddOsob(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddOsob().exec()
-        self.table.model.updateData()
+        self.edit_window = AddOsob()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class ZavodIzgList(ListAll):
@@ -82,14 +84,9 @@ class ZavodIzgList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = ZavIzg.get_by_id(item.siblingAtColumn(0).data())
-        AddZavodIzg(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddZavodIzg().exec()
-        self.table.model.updateData()
+        self.edit_window = AddZavodIzg()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class ZavodRemList(ListAll):
@@ -100,14 +97,9 @@ class ZavodRemList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = RemZav.get_by_id(item.siblingAtColumn(0).data())
-        AddZavodRem(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddZavodRem().exec()
-        self.table.model.updateData()
+        self.edit_window = AddZavodRem()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class SpecList(ListAll):
@@ -118,14 +110,9 @@ class SpecList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = Spec.get_by_id(item.siblingAtColumn(0).data())
-        AddSpec(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddSpec().exec()
-        self.table.model.updateData()
+        self.edit_window = AddSpec()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class RemTypeList(ListAll):
@@ -136,18 +123,12 @@ class RemTypeList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = RemType.get_by_id(item.siblingAtColumn(0).data())
-        AddTypeRem(edit_item).exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddTypeRem().exec()
-        self.table.model.updateData()
+        self.edit_window = AddTypeRem()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class PlaneSystemList(ListAll):
-    send_object = pyqtSignal(PlaneSystem)
 
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -156,22 +137,9 @@ class PlaneSystemList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_item = PlaneSystem.get_by_id(item.siblingAtColumn(0).data())
-        edit_system = AddSystem()
-        edit_system.update_signal.connect(self.update_table)
-        self.send_object.connect(edit_system.edit)
-        self.send_object.emit(edit_item)
-        edit_system.exec()
-
-    @pyqtSlot()
-    def update_table(self):
-        self.table.model.updateData()
-
-    def add(self):
-        add_system = AddSystem()
-        add_system.update_signal.connect(self.update_table)
-        add_system.exec()
+        self.edit_window = AddSystem()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
 
 
 class PlaneList(ListAll):
@@ -184,14 +152,6 @@ class PlaneList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-    def edit(self, item):
-        edit_window = AddPlane()
-        self.send_object.connect(edit_window.edit_plane)
-        edit_item_id = item.siblingAtColumn(0).data()
-        self.send_object.emit(edit_item_id)
-        edit_window.exec()
-        self.table.model.updateData()
-
-    def add(self):
-        AddPlane().exec()
-        self.table.model.updateData()
+        self.edit_window = AddPlane()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)

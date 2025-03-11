@@ -9,6 +9,8 @@ from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, ZavIz
 
 
 class Adds(QDialog):
+    update_signal = pyqtSignal()
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.resize(500, 500)
@@ -31,33 +33,37 @@ class Adds(QDialog):
 
 
 class AddUnit(Adds):
-    def __init__(self, unit: Unit = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.unit = unit
+        self.unit = None
         self.setWindowTitle("Добавить подразделение")
         self.unit_name = QLineEdit()
         self.form.addRow("Подразделение", self.unit_name)
-        if unit is not None:
-            self.setWindowTitle("Изменить подразделение")
-            self.btn_del = QPushButton("Удалить")
-            self.btn_del.clicked.connect(self.delete)
-            self.btnlayout.addWidget(self.btn_del)
-
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
 
     def add(self):
         unit = Unit()
         unit.name = self.unit_name.text()
         unit.save()
+        self.update_signal.emit()
         self.clear()
 
     def save(self):
         self.unit.name = self.unit_name.text()
         self.unit.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, unit_id):
+        self.unit = Unit.get_by_id(unit_id)
+        self.load()
+        self.setWindowTitle("Изменить подразделение")
+        self.btn_del = QPushButton("Удалить")
+        self.btn_del.clicked.connect(self.delete)
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
 
     def clear(self):
         self.unit_name.setText("")
@@ -68,36 +74,41 @@ class AddUnit(Adds):
     def delete(self):
         self.unit.not_delete = False
         self.unit.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddPlaneType(Adds):
-    def __init__(self, plane_type: PlaneType = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.plane_type = plane_type
+        self.plane_type = None
         self.setWindowTitle("Добавить тип самолета")
         self.type_name = QLineEdit()
         self.form.addRow("Тип", self.type_name)
-        if plane_type is not None:
-            self.setWindowTitle("Изменить тип самолета")
-            self.btn_del = QPushButton("Удалить")
-            self.btn_del.clicked.connect(self.delete)
-            self.btnlayout.addWidget(self.btn_del)
-
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
 
     def add(self):
         plane_type = PlaneType()
         plane_type.name = self.type_name.text()
         plane_type.save()
+        self.update_signal.emit()
         self.clear()
+
+    @pyqtSlot(str)
+    def edit(self, plane_type_id):
+        self.plane_type = PlaneType.get_by_id(plane_type_id)
+        self.load()
+        self.setWindowTitle("Изменить тип самолета")
+        self.btn_del = QPushButton("Удалить")
+        self.btn_del.clicked.connect(self.delete)
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
 
     def save(self):
         self.plane_type.name = self.type_name.text()
         self.plane_type.save()
+        self.update_signal.emit()
         self.accept()
 
     def clear(self):
@@ -109,13 +120,14 @@ class AddPlaneType(Adds):
     def delete(self):
         self.plane_type.not_delete = False
         self.plane_type.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddPlane(Adds):
-    def __init__(self, plane: Plane = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.plane = plane
+        self.plane = None
         self.setWindowTitle("Добавить самолет")
         self.planeType_combobox = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
         self.unit_combobox = UnitComboBox(Unit.select().where(Unit.not_delete == True))
@@ -142,7 +154,7 @@ class AddPlane(Adds):
         self.planeType_combobox.setFocus()
 
     @pyqtSlot(str)
-    def edit_plane(self, plane_id):
+    def edit(self, plane_id):
         self.plane = Plane.get_by_id(plane_id)
         self.load()
         self.setWindowTitle("Изменить самолет")
@@ -166,6 +178,7 @@ class AddPlane(Adds):
         plane.remType = self.remType.currentData()
         plane.osobPlane = self.osob_dump()
         plane.save()
+        self.update_signal.emit()
         self.clean()
 
     def osob_dump(self):
@@ -213,39 +226,45 @@ class AddPlane(Adds):
         self.plane.remType = self.remType.currentData(role=Qt.ItemDataRole.UserRole)
         self.plane.osobPlane = self.osob_dump()
         self.plane.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.plane.not_delete = False
         self.plane.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddOsob(Adds):
-    def __init__(self,  osob: OsobPlane = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.osob = osob
+        self.osob = None
         self.setWindowTitle("Добавить особенность")
         self.osob_edit = QLineEdit()
         self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
         self.form.addRow("Тип самолета", self.plane_type)
         self.form.addRow("&Наименование", self.osob_edit)
-        if self.osob is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         osob = OsobPlane()
         osob.name = self.osob_edit.text()
         osob.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
         osob.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, osob_id):
+        self.osob = OsobPlane.get_by_id(osob_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
 
     def load(self):
         self.osob_edit.setText(self.osob.name)
@@ -255,17 +274,17 @@ class AddOsob(Adds):
         self.osob.name = self.osob_edit.text()
         self.osob.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
         self.osob.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.osob.not_delete = False
         self.osob.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddSystem(Adds):
-    update_signal = pyqtSignal()
-
     def __init__(self, parent=None):
         super().__init__(parent)
         self.system = PlaneSystem()
@@ -321,27 +340,31 @@ class AddSystem(Adds):
 
 
 class AddZavodIzg(Adds):
-    def __init__(self, zavod_izg: ZavIzg = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.zavod_izg = zavod_izg
+        self.zavod_izg = None
         self.setWindowTitle("Добавить завод изготовитель")
         self.zavod_izg_edit = QLineEdit()
         self.form.addRow("Завод изготовитель", self.zavod_izg_edit)
-        if self.zavod_izg is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         zavod_izg = ZavIzg()
         zavod_izg.name = self.zavod_izg_edit.text()
         zavod_izg.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, zavod_izg_id):
+        self.zavod_izg = ZavIzg.get_by_id(zavod_izg_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
 
     def load(self):
         self.zavod_izg_edit.setText(self.zavod_izg.name)
@@ -349,36 +372,42 @@ class AddZavodIzg(Adds):
     def save(self):
         self.zavod_izg.name = self.zavod_izg_edit.text()
         self.zavod_izg.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.zavod_izg.not_delete = False
         self.zavod_izg.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddZavodRem(Adds):
-    def __init__(self, zavod_rem: RemZav = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.zavod_rem = zavod_rem
+        self.zavod_rem = None
         self.setWindowTitle("Добавить ремонтный завод")
         self.zavod_rem_edit = QLineEdit()
         self.form.addRow("Ремонтный завод", self.zavod_rem_edit)
-        if self.zavod_rem is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         zavod_rem = RemZav()
         zavod_rem.name = self.zavod_rem_edit.text()
         zavod_rem.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, zavod_rem_id):
+        self.zavod_rem = RemZav.get_by_id(zavod_rem_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
 
     def load(self):
         self.zavod_rem_edit.setText(self.zavod_rem.name)
@@ -386,36 +415,42 @@ class AddZavodRem(Adds):
     def save(self):
         self.zavod_rem.name = self.zavod_rem_edit.text()
         self.zavod_rem.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.zavod_rem.not_delete = False
         self.zavod_rem.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddSpec(Adds):
-    def __init__(self, spec: Spec = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.spec = spec
+        self.spec = None
         self.setWindowTitle("Добавить специальность")
         self.spec_edit = QLineEdit()
         self.form.addRow("Специальность", self.spec_edit)
-        if self.spec is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         spec = Spec()
         spec.name = self.spec_edit.text()
         spec.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, spec_id):
+        self.spec = Spec.get_by_id(spec_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
 
     def load(self):
         self.spec_edit.setText(self.spec.name)
@@ -423,39 +458,45 @@ class AddSpec(Adds):
     def save(self):
         self.spec.name = self.spec_edit.text()
         self.spec.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.spec.not_delete = False
         self.spec.save()
+        self.update_signal.emit()
         self.accept()
 
 
 class AddTypeRem(Adds):
-    def __init__(self, type_rem: RemType = None, parent=None):
+    def __init__(self, parent=None):
         super().__init__(parent)
-        self.type_rem = type_rem
+        self.type_rem = None
         self.setWindowTitle("Добавить тип ремонта")
         self.type_rem_edit = QLineEdit()
         self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
         self.form.addRow("Тип самолета", self.plane_type)
         self.form.addRow("&Наименование", self.type_rem_edit)
-        if self.type_rem is not None:
-            self.setWindowTitle("Изменить")
-            self.btn_ok.setText("Сохранить")
-            self.btn_ok.clicked.disconnect()
-            self.btn_ok.clicked.connect(self.save)
-            self.load()
-            self.btn_del = QPushButton("Удалить")
-            self.btnlayout.addWidget(self.btn_del)
-            self.btn_del.clicked.connect(self.delete)
 
     def add(self):
         type_rem = RemType()
         type_rem.name = self.type_rem_edit.text()
         type_rem.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
         type_rem.save()
+        self.update_signal.emit()
         self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, type_rem_id):
+        self.type_rem = RemType.get_by_id(type_rem_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
 
     def load(self):
         self.type_rem_edit.setText(self.type_rem.name)
@@ -465,9 +506,11 @@ class AddTypeRem(Adds):
         self.type_rem.name = self.type_rem_edit.text()
         self.type_rem.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
         self.type_rem.save()
+        self.update_signal.emit()
         self.accept()
 
     def delete(self):
         self.type_rem.not_delete = False
         self.type_rem.save()
+        self.update_signal.emit()
         self.accept()

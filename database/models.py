@@ -122,15 +122,6 @@ class PlaneSystem(BaseModel):
         db_table = 'plane_systems'
 
 
-class AgregateList(BaseModel):
-    planeSystem = ForeignKeyField(PlaneSystem)
-    name = CharField(max_length=100, null=False)
-    not_delete = BooleanField(default=True)
-
-    class Meta:
-        db_table = 'agregates_list'
-
-
 class AgregateState(BaseModel):
     name = CharField(max_length=100, null=False)
     not_delete = BooleanField(default=True)
@@ -139,22 +130,32 @@ class AgregateState(BaseModel):
         db_table = 'agregate_states'
 
 
-class Agregate(BaseModel):
-    planeAgregate = ForeignKeyField(AgregateList)
+class AgregateType(BaseModel):
+    planeSystem = ForeignKeyField(PlaneSystem)
+    name = CharField(max_length=100, null=False)
+    count_on_plane = IntegerField(default=1)
+    not_delete = BooleanField(default=True)
+
+    class Meta:
+        db_table = 'agregate_type_list'
+
+
+class AgregateList(BaseModel):
+    agregateId = ForeignKeyField(AgregateType)
     zavNum = CharField(max_length=100, null=True)
     dateVyp = DateField(null=True)
     planeId = ForeignKeyField(Plane)
     state = ForeignKeyField(AgregateState)
 
     class Meta:
-        db_table = 'agregates'
+        db_table = 'agregate_list'
 
 
 def create_tables():
     with db:
         db.create_tables(
             [
-                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, AgregateList,
-                OsobPlane, AgregateState, RemZav, RemType, ZavIzg, Agregate
+                ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, AgregateType,
+                OsobPlane, AgregateState, RemZav, RemType, ZavIzg, AgregateList
             ]
         )

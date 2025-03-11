@@ -1,9 +1,10 @@
 import datetime
 
-from PyQt6.QtCore import QAbstractTableModel, Qt, QSortFilterProxyModel
+from PyQt6.QtCore import QAbstractTableModel, Qt, QSortFilterProxyModel, QRegularExpression
 from PyQt6.QtGui import QBrush, QColor
-from PyQt6.QtWidgets import QTableView, QHeaderView
+from PyQt6.QtWidgets import QTableView, QHeaderView, QFormLayout
 
+from custom_widgets.combobox import TypePlaneComboBox
 from database.models import *
 
 
@@ -163,13 +164,45 @@ class ListControlModel(QAbstractTableModel):
         self.endResetModel()
 
 
+class ListControlProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.vypolnen_filter = QRegularExpression()
+        self.prosroch_filter = QRegularExpression()
+        self.plane_filter = QRegularExpression()
+
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        vypolnen = self.sourceModel().index(sourceRow, 5, sourceParent).data()
+        prosrochen = self.sourceModel().index(sourceRow, 3, sourceParent).data()
+        plane = self.sourceModel().index(sourceRow, 5, sourceParent).data()
+
+        # Проверяем соответствие каждого значения своим фильтрам
+        return self.vypolnen_filter.match(str(vypolnen)).hasMatch() and \
+            self.prosroch_filter.match(str(prosrochen)).hasMatch() and \
+            self.plane_filter.match(str(plane)).hasMatch()
+
+    def setVypolnenFilter(self, pattern):
+        self.vypolnen_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+    def setProsrochFilter(self, pattern):
+        self.prosroch_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+    def setPlaneFilter(self, pattern):
+        if pattern == "Все":
+            self.plane_filter.setPattern('')
+        else:
+            self.plane_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+
 class LCTableView(QTableView):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.model = ListControlModel(query=ListControl.select())
-        self.proxy_model = QSortFilterProxyModel()
+        self.proxy_model = ListControlProxyModel()
         self.proxy_model.setSourceModel(self.model)
-        self.proxy_model.setFilterKeyColumn(5)
         self.setModel(self.proxy_model)
         self.hideColumn(6)
         self.setColumnWidth(5, 200)
@@ -317,11 +350,11 @@ class IspravnostPlaneTableModel(QAbstractTableModel):
             if col == 0:
                 return agregate.id
             elif col == 1:
-                return agregate.planeAgregate.planeSystem.specId.name
+                return agregate.agregateId.planeSystem.specId.name
             elif col == 2:
-                return agregate.planeAgregate.planeSystem.name
+                return agregate.agregateId.planeSystem.name
             elif col == 3:
-                return agregate.planeAgregate.name
+                return agregate.agregateId.name
             elif col == 4:
                 return agregate.zavNum
             elif col == 5:
@@ -587,10 +620,85 @@ class PlaneSystemTableModel(QAbstractTableModel):
         self.endResetModel()
 
 
+class PlaneSystemProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.type_filter = QRegularExpression()
+        self.spec_filter = QRegularExpression()
+
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+
+        type_name = self.sourceModel().index(sourceRow, 1, sourceParent).data()
+        spec_name = self.sourceModel().index(sourceRow, 2, sourceParent).data()
+
+        # Проверяем соответствие каждого значения своим фильтрам
+        return self.type_filter.match(str(type_name)).hasMatch() and \
+            self.spec_filter.match(str(spec_name)).hasMatch()
+
+    def setTypeFilter(self, pattern):
+        self.type_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+    def setSpecFilter(self, pattern):
+        self.spec_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+
 class PlaneSystemTableView(QTableView):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.model = PlaneSystemTableModel()
+        self.proxy_model = PlaneSystemProxyModel()
+        self.proxy_model.setSourceModel(self.model)
+        self.setModel(self.proxy_model)
+        self.proxy_model.setFilterKeyColumn(1)
+
+        self.hideColumn(0)
+        self.verticalHeader().setDefaultSectionSize(30)
+
+
+class AgregateStateTableModel(QAbstractTableModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataset = AgregateState.select().where(AgregateState.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 2
+
+    def headerData(self, section, orientation, role=...):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Состояние"
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            agregate_state = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return agregate_state.id
+            elif col == 1:
+                return agregate_state.name
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = AgregateState.select().where(AgregateState.not_delete == True)
+        self.endResetModel()
+
+
+class AgregateStateTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = AgregateStateTableModel()
         self.setModel(self.model)
         self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)

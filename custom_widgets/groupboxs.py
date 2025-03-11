@@ -39,8 +39,9 @@ class UnitPlaneGroupBox (QGroupBox):
 
     def dropEvent(self, e):
         plane_btn = e.source()
-        plane_btn.type_rem.plane_type = self.unit.id
+        plane_btn.agregate_state.plane_type = self.unit.id
         self.layout().addWidget(plane_btn)
+
 
 class PlaneGroupBox (QGroupBox):
     def __init__(self, unit: Unit, checkable=False, parent=None):
@@ -61,7 +62,7 @@ class PlaneGroupBox (QGroupBox):
 
     def dropEvent(self, e):
         plane_btn = e.source()
-        plane_btn.type_rem.plane_type = self.unit.id
+        plane_btn.agregate_state.plane_type = self.unit.id
         self.layout().addWidget(plane_btn)
 
 
@@ -82,3 +83,5 @@ class OsobGroupBox(QGroupBox):
             if i > 2:
                 j += 1
                 i = 0
+
+

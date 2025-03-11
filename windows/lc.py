@@ -24,14 +24,14 @@ class ListLC(QWidget):
         self.filter_layout = QHBoxLayout()
         self.btn_filter_ex = QPushButton("Только не &выполненные")
         self.btn_filter_ex.setCheckable(True)
-        self.btn_filter_ex.clicked.connect(lambda: self.set_filter_by_btn(1, self.btn_filter_ex))
+        self.btn_filter_ex.clicked.connect(self.set_filter_by_btn)
 
         self.btn_filter_de = QPushButton("Только &просроченные")
         self.btn_filter_de.setCheckable(True)
-        self.btn_filter_de.clicked.connect(lambda: self.set_filter_by_btn(2, self.btn_filter_de))
+        self.btn_filter_de.clicked.connect(self.set_filter_by_btn)
 
         self.filterPlaneCombo = PlaneFilterComboBox(Plane.select().where(Plane.not_delete == True))
-        self.filterPlaneCombo.currentIndexChanged.connect(lambda index: self.set_filter_by_combo(index))
+        self.filterPlaneCombo.currentTextChanged.connect(self.table.proxy_model.setPlaneFilter)
         self.filter_layout.addWidget(self.btn_filter_ex)
         self.filter_layout.addWidget(self.btn_filter_de)
         self.filter_layout.addWidget(self.filterPlaneCombo)
@@ -43,27 +43,15 @@ class ListLC(QWidget):
         self.btn_layout.addWidget(self.btn_add_lc)
         self.mainLayout.addLayout(self.btn_layout)
 
-    def set_filter_by_combo(self, index):
-        data = self.filterPlaneCombo.itemData(index, role=Qt.ItemDataRole.DisplayRole)
-        self.set_filter(data, 5)
-
-    def set_filter_by_btn(self, case, btn):
-        if case == 1 and btn.isChecked():
-            self.set_filter("Не выполнено", 5)
-            return
-        if case == 2 and btn.isChecked():
-            self.set_filter('Просрочен', 3)
-            return
-        if not btn.isChecked():
-            self.set_filter('', 0)
-            return
-
-    def set_filter(self, data, col):
-        if data == "Все":
-            self.table.proxy_model.setFilterRegularExpression('')
+    def set_filter_by_btn(self):
+        if self.btn_filter_de.isChecked():
+            self.table.proxy_model.setProsrochFilter(r"Просрочен")
         else:
-            self.table.proxy_model.setFilterRegularExpression(data)
-            self.table.proxy_model.setFilterKeyColumn(col)
+            self.table.proxy_model.setProsrochFilter("")
+        if self.btn_filter_ex.isChecked():
+            self.table.proxy_model.setVypolnenFilter(r"Не выполнено")
+        else:
+            self.table.proxy_model.setVypolnenFilter("")
 
     def add_lc_w(self):
         lcw = AddLC()

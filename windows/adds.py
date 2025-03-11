@@ -5,7 +5,7 @@ from custom_widgets.buttons import OsobBtn
 from custom_widgets.combobox import (TypePlaneComboBox, UnitComboBox, RemZavComboBox, ZavodIzgComboBox, RemTypeComboBox,
                                      SpecComboBox)
 from custom_widgets.groupboxs import OsobGroupBox
-from database.models import PlaneType, Plane, Unit, Spec, RemType, RemZav, ZavIzg, OsobPlane, PlaneSystem
+from database.models import *
 
 
 class Adds(QDialog):
@@ -306,9 +306,9 @@ class AddSystem(Adds):
         self.update_signal.emit()
         self.accept()
 
-    @pyqtSlot(PlaneSystem)
+    @pyqtSlot(str)
     def edit(self, system):
-        self.system = system
+        self.system = PlaneSystem.get_by_id(system)
         self.load()
         self.setWindowTitle("Изменить")
         self.btn_ok.setText("Сохранить")
@@ -512,5 +512,48 @@ class AddTypeRem(Adds):
     def delete(self):
         self.type_rem.not_delete = False
         self.type_rem.save()
+        self.update_signal.emit()
+        self.accept()
+
+
+class AddAgregateState(Adds):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.agregate_state = None
+        self.setWindowTitle("Добавить состояние")
+        self.agregate_state_edit = QLineEdit()
+        self.form.addRow("&Наименование", self.agregate_state_edit)
+
+    def add(self):
+        agregate_state = AgregateState()
+        agregate_state.name = self.agregate_state_edit.text()
+        agregate_state.save()
+        self.update_signal.emit()
+        self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, type_rem_id):
+        self.agregate_state = AgregateState.get_by_id(type_rem_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
+
+    def load(self):
+        self.agregate_state_edit.setText(self.agregate_state.name)
+
+    def save(self):
+        self.agregate_state.name = self.agregate_state_edit.text()
+        self.agregate_state.save()
+        self.update_signal.emit()
+        self.accept()
+
+    def delete(self):
+        self.agregate_state.not_delete = False
+        self.agregate_state.save()
         self.update_signal.emit()
         self.accept()

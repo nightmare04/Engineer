@@ -23,7 +23,7 @@ class ListAll(QDialog):
 
     def edit(self, item):
         edit_item_id = item.siblingAtColumn(0).data()
-        self.send.emit(edit_item_id)
+        self.send.emit(str(edit_item_id))
         self.edit_window.exec()
 
     def add(self):
@@ -128,8 +128,20 @@ class RemTypeList(ListAll):
         self.send.connect(self.edit_window.edit)
 
 
-class PlaneSystemList(ListAll):
+class PlaneList(ListAll):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Список самолетов")
+        self.table = PlaneTableView()
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
 
+        self.edit_window = AddPlane()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)
+
+
+class PlaneSystemList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список систем самолета")
@@ -141,17 +153,30 @@ class PlaneSystemList(ListAll):
         self.edit_window.update_signal.connect(self.update_table)
         self.send.connect(self.edit_window.edit)
 
+        self.filter_layout = QFormLayout()
+        self.mainLayout.insertLayout(1, self.filter_layout)
+        self.type_filter = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.spec_filter = SpecComboBox(Spec.select().where(Spec.not_delete == True))
+        self.filter_layout.addRow("Выберите тип самолета", self.type_filter)
+        self.filter_layout.addRow("Выберите специальность", self.spec_filter)
 
-class PlaneList(ListAll):
-    send_object = pyqtSignal(str)
+        self.type_filter.currentTextChanged.connect(self.table.proxy_model.setTypeFilter)
+        self.spec_filter.currentTextChanged.connect(self.table.proxy_model.setSpecFilter)
 
+
+class AgregateStateList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Список самолетов")
-        self.table = PlaneTableView()
+        self.setWindowTitle("Список состояний блока/агрегата")
+        self.table = AgregateStateTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-        self.edit_window = AddPlane()
+        self.edit_window = AddAgregateState()
         self.edit_window.update_signal.connect(self.update_table)
         self.send.connect(self.edit_window.edit)
+
+
+class AgregateNameList(ListAll):
+    pass
+

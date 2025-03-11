@@ -56,14 +56,17 @@ class MainWindow(QMainWindow):
         self.spec_menu.triggered.connect(self.open_specs)
         self.unit_menu.addAction(self.spec_menu)
 
-        self.system_menu = QAction("Системы", parent=self)
+        self.system_menu = QAction("Системы самолета", parent=self)
         self.system_menu.triggered.connect(self.open_systems)
         self.agregate_menu.addAction(self.system_menu)
 
         self.agregates_menu = QAction("Блоки/Агрегаты", parent=self)
-        # self.system_menu.triggered.connect(self.open_agregates)
+        self.agregates_menu.triggered.connect(self.open_agregates)
         self.agregate_menu.addAction(self.agregates_menu)
 
+        self.agregates_state_menu = QAction("Возможные состояния блоков", parent=self)
+        self.agregates_state_menu.triggered.connect(self.open_agregate_state)
+        self.agregate_menu.addAction(self.agregates_state_menu)
 
         self.settings_menu.addAction(self.plane_menu.menuAction())
         self.settings_menu.addAction(self.unit_menu.menuAction())
@@ -95,10 +98,16 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def open_systems():
-        PlaneSystemList().exec()
+        plane_system = PlaneSystemList()
+        plane_system.exec()
 
-    def open_agregates(self):
+    @staticmethod
+    def open_agregates():
         pass
+
+    @staticmethod
+    def open_agregate_state():
+        AgregateStateList().exec()
 
     @staticmethod
     def open_units():

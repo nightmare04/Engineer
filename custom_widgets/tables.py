@@ -327,7 +327,7 @@ class IspravnostPlaneTableModel(QAbstractTableModel):
     def columnCount(self, parent=...):
         return 6
 
-    def headerData(self, section, orientation, role = ...):
+    def headerData(self, section, orientation, role=...):
         if role == Qt.ItemDataRole.DisplayRole:
             if orientation == Qt.Orientation.Horizontal:
                 return {

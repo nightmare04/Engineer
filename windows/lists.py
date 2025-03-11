@@ -178,5 +178,26 @@ class AgregateStateList(ListAll):
 
 
 class AgregateNameList(ListAll):
-    pass
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle("Список наименований блоков")
+        self.table = AgregateNameTableView()
+        self.mainLayout.insertWidget(0, self.table)
+        self.table.doubleClicked.connect(self.edit)
 
+        self.filterLayout = QFormLayout()
+        self.plane_type_cb = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.spec_cb = SpecComboBox(Spec.select().where(Spec.not_delete == True))
+        self.system_cb = SystemComboBox(PlaneSystem.select().where(PlaneSystem.not_delete == True))
+        self.filterLayout.addRow("Выбери тип", self.plane_type_cb)
+        self.filterLayout.addRow("Выбери специальность", self.spec_cb)
+        self.filterLayout.addRow("Выбери Систему", self.system_cb)
+        self.mainLayout.insertLayout(1, self.filterLayout)
+
+        self.plane_type_cb.currentTextChanged.connect(self.table.proxy_model.setTypeFilter)
+        self.spec_cb.currentTextChanged.connect(self.table.proxy_model.setSpecFilter)
+        self.system_cb.currentTextChanged.connect(self.table.proxy_model.setSystemFilter)
+
+        self.edit_window = AddAgregateName()
+        self.edit_window.update_signal.connect(self.update_table)
+        self.send.connect(self.edit_window.edit)

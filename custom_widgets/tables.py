@@ -40,7 +40,7 @@ class AllTableModel(QAbstractTableModel):
             elif orientation == Qt.Orientation.Vertical:
                 return f'{section + 1}'
 
-    def updateData(self, query=None):
+    def updateData(self):
         self.beginResetModel()
         self._dataset = self.basemodel.select().where(self.basemodel.not_delete == True)
         self.endResetModel()
@@ -702,3 +702,94 @@ class AgregateStateTableView(QTableView):
         self.setModel(self.model)
         self.hideColumn(0)
         self.verticalHeader().setDefaultSectionSize(30)
+
+
+class AgregateNameTableModel(QAbstractTableModel):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._dataset = AgregateName.select().where(AgregateName.not_delete == True)
+
+    def rowCount(self, parent=...):
+        return len(self._dataset)
+
+    def columnCount(self, parent=...):
+        return 6
+
+    def headerData(self, section, orientation, role=...):
+        if role == Qt.ItemDataRole.DisplayRole:
+            if orientation == Qt.Orientation.Horizontal:
+                return {
+                    0: "ID",
+                    1: "Тип самолета",
+                    2: "Специальность",
+                    3: "Система",
+                    4: "Наименование",
+                    5: "Количество на самолете",
+                }.get(section)
+            elif orientation == Qt.Orientation.Vertical:
+                return section + 1
+
+    def data(self, index, role=...):
+        if not index.isValid():
+            return
+        if role == Qt.ItemDataRole.DisplayRole:
+            agregate_name = self._dataset[index.row()]
+            col = index.column()
+            if col == 0:
+                return agregate_name.id
+            elif col == 1:
+                return agregate_name.typeId.name
+            elif col == 2:
+                return agregate_name.specId.name
+            elif col == 3:
+                return agregate_name.systemId.name
+            elif col == 4:
+                return agregate_name.name
+            elif col == 5:
+                return agregate_name.count_on_plane
+
+    def updateData(self):
+        self.beginResetModel()
+        self._dataset = AgregateName.select().where(AgregateName.not_delete == True)
+        self.endResetModel()
+
+
+class AgregateNameProxyModel(QSortFilterProxyModel):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.type_filter = QRegularExpression()
+        self.spec_filter = QRegularExpression()
+        self.system_filter = QRegularExpression()
+
+    def filterAcceptsRow(self, sourceRow, sourceParent):
+        type_name = self.sourceModel().index(sourceRow, 1, sourceParent).data()
+        spec_name = self.sourceModel().index(sourceRow, 2, sourceParent).data()
+        system_name = self.sourceModel().index(sourceRow, 3, sourceParent).data()
+
+        # Проверяем соответствие каждого значения своим фильтрам
+        return self.type_filter.match(str(type_name)).hasMatch() and \
+            self.system_filter.match(str(system_name)).hasMatch() and \
+            self.spec_filter.match(str(spec_name)).hasMatch()
+
+    def setTypeFilter(self, pattern):
+        self.type_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+    def setSystemFilter(self, pattern):
+        self.system_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+    def setSpecFilter(self, pattern):
+        self.spec_filter.setPattern(pattern)
+        self.invalidateFilter()
+
+
+class AgregateNameTableView(QTableView):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.model = AgregateNameTableModel()
+        self.proxy_model = AgregateNameProxyModel()
+        self.proxy_model.setSourceModel(self.model)
+        self.setModel(self.proxy_model)
+        self.hideColumn(0)
+

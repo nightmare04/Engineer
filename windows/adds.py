@@ -1,9 +1,8 @@
 from PyQt6.QtCore import Qt, pyqtSlot, pyqtSignal
-from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QFormLayout, QLineEdit, QDateEdit
+from PyQt6.QtWidgets import QDialog, QHBoxLayout, QVBoxLayout, QPushButton, QFormLayout, QLineEdit, QDateEdit, QSpinBox
 
 from custom_widgets.buttons import OsobBtn
-from custom_widgets.combobox import (TypePlaneComboBox, UnitComboBox, RemZavComboBox, ZavodIzgComboBox, RemTypeComboBox,
-                                     SpecComboBox)
+from custom_widgets.combobox import *
 from custom_widgets.groupboxs import OsobGroupBox
 from database.models import *
 
@@ -555,5 +554,70 @@ class AddAgregateState(Adds):
     def delete(self):
         self.agregate_state.not_delete = False
         self.agregate_state.save()
+        self.update_signal.emit()
+        self.accept()
+
+
+class AddAgregateName(Adds):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.agregate_name = None
+        self.setWindowTitle("Добавить блок/агрегат")
+        self.plane_type_cb = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
+        self.spec_cb = SpecComboBox(Spec.select().where(Spec.not_delete == True))
+        self.system_cb = SystemComboBox(PlaneSystem.select().where(PlaneSystem.not_delete == True))
+        self.count_on_plane = QSpinBox()
+        self.count_on_plane.setValue(1)
+        self.agregate_name_edit = QLineEdit()
+        self.form.addRow("Тип самолета", self.plane_type_cb)
+        self.form.addRow("Специальность", self.spec_cb)
+        self.form.addRow("Система", self.system_cb)
+        self.form.addRow("Наименование", self.agregate_name_edit)
+        self.form.addRow("Количество на самолете", self.count_on_plane)
+        self.agregate_name_edit.setFocus()
+
+    def add(self):
+        self.agregate_name = AgregateName()
+        self.agregate_name.name = self.agregate_name_edit.text()
+        self.agregate_name.typeId = self.plane_type_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate_name.specId = self.spec_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate_name.systemId = self.system_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate_name.count_on_plane = self.count_on_plane.value()
+        self.agregate_name.save()
+        self.update_signal.emit()
+        self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, type_rem_id):
+        self.agregate_name = AgregateName.get_by_id(type_rem_id)
+        self.load()
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
+
+    def load(self):
+        self.agregate_name_edit.setText(self.agregate_name.name)
+        self.plane_type_cb.setCurrentIndex(self.plane_type_cb.findText(self.agregate_name.typeId.name))
+        self.spec_cb.setCurrentIndex(self.plane_type_cb.findText(self.agregate_name.specId.name))
+        self.system_cb.setCurrentIndex(self.plane_type_cb.findText(self.agregate_name.systemId.name))
+        self.count_on_plane.setValue(self.agregate_name.count_on_plane)
+
+    def save(self):
+        self.agregate_name.name = self.agregate_name_edit.text()
+        self.agregate_name.typeId = self.plane_type_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate_name.specId = self.spec_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate_name.systemId = self.system_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate_name.count_on_plane = self.count_on_plane.text()
+        self.agregate_name.save()
+        self.update_signal.emit()
+        self.accept()
+
+    def delete(self):
+        self.agregate_name.not_delete = False
+        self.agregate_name.save()
         self.update_signal.emit()
         self.accept()

@@ -90,3 +90,8 @@ class RemTypeComboBox(MyComboBox):
 class ZavodIzgComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)
+
+
+class SystemComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)

@@ -103,7 +103,7 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def open_agregates():
-        pass
+        AgregateNameList().exec()
 
     @staticmethod
     def open_agregate_state():
@@ -140,4 +140,3 @@ class MainWindow(QMainWindow):
     @staticmethod
     def open_remType():
         RemTypeList().exec()
-

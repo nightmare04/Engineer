@@ -38,6 +38,7 @@ class AddUnit(Adds):
         self.setWindowTitle("Добавить подразделение")
         self.unit_name = QLineEdit()
         self.form.addRow("Подразделение", self.unit_name)
+        self.unit_name.setFocus()
 
     def add(self):
         unit = Unit()
@@ -84,6 +85,7 @@ class AddPlaneType(Adds):
         self.setWindowTitle("Добавить тип самолета")
         self.type_name = QLineEdit()
         self.form.addRow("Тип", self.type_name)
+        self.type_name.setFocus()
 
     def add(self):
         plane_type = PlaneType()
@@ -138,6 +140,8 @@ class AddPlane(Adds):
         self.remZav = RemZavComboBox(RemZav.select().where(RemZav.not_delete == True))
         self.remType = RemTypeComboBox(RemType.select().where(RemType.not_delete == True))
         self.osobPlane = OsobGroupBox()
+        self.planeType_combobox.currentIndexChanged.connect(self.fillOsob)
+        self.fillOsob()
 
         self.form.addRow("Тип самолета", self.planeType_combobox)
         self.form.addRow("Подразделение", self.unit_combobox)
@@ -150,7 +154,21 @@ class AddPlane(Adds):
         self.form.addRow("Вид ремонта", self.remType)
         self.form.addRow("Особенности самолета", self.osobPlane)
 
-        self.planeType_combobox.setFocus()
+        self.bortNum.setFocus()
+
+    def fillOsob(self):
+        btns = self.osobPlane.findChildren(OsobBtn)
+        for btn in btns:
+            btn.setParent(None)
+        i = 0
+        j = 0
+        for osob in OsobPlane.select().where(OsobPlane.not_delete == True, OsobPlane.typeId == self.planeType_combobox.currentData(Qt.ItemDataRole.UserRole)):
+            i += 1
+            btn_osob = OsobBtn(osob)
+            self.osobPlane.mainlayout.addWidget(btn_osob, j, i)
+            if i > 2:
+                j += 1
+                i = 0
 
     @pyqtSlot(str)
     def edit(self, plane_id):
@@ -244,6 +262,7 @@ class AddOsob(Adds):
         self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
         self.form.addRow("Тип самолета", self.plane_type)
         self.form.addRow("&Наименование", self.osob_edit)
+        self.osob_edit.setFocus()
 
     def add(self):
         osob = OsobPlane()
@@ -345,6 +364,7 @@ class AddZavodIzg(Adds):
         self.setWindowTitle("Добавить завод изготовитель")
         self.zavod_izg_edit = QLineEdit()
         self.form.addRow("Завод изготовитель", self.zavod_izg_edit)
+        self.zavod_izg_edit.setFocus()
 
     def add(self):
         zavod_izg = ZavIzg()
@@ -388,6 +408,7 @@ class AddZavodRem(Adds):
         self.setWindowTitle("Добавить ремонтный завод")
         self.zavod_rem_edit = QLineEdit()
         self.form.addRow("Ремонтный завод", self.zavod_rem_edit)
+        self.zavod_rem_edit.setFocus()
 
     def add(self):
         zavod_rem = RemZav()
@@ -431,6 +452,7 @@ class AddSpec(Adds):
         self.setWindowTitle("Добавить специальность")
         self.spec_edit = QLineEdit()
         self.form.addRow("Специальность", self.spec_edit)
+        self.spec_edit.setFocus()
 
     def add(self):
         spec = Spec()
@@ -476,6 +498,7 @@ class AddTypeRem(Adds):
         self.plane_type = TypePlaneComboBox(PlaneType.select().where(PlaneType.not_delete == True))
         self.form.addRow("Тип самолета", self.plane_type)
         self.form.addRow("&Наименование", self.type_rem_edit)
+        self.type_rem_edit.setFocus()
 
     def add(self):
         type_rem = RemType()
@@ -522,6 +545,7 @@ class AddAgregateState(Adds):
         self.setWindowTitle("Добавить состояние")
         self.agregate_state_edit = QLineEdit()
         self.form.addRow("&Наименование", self.agregate_state_edit)
+        self.agregate_state_edit.setFocus()
 
     def add(self):
         agregate_state = AgregateState()
@@ -578,11 +602,13 @@ class AddAgregateName(Adds):
         self.plane_type_cb.currentTextChanged.connect(self.changeData)
         self.spec_cb.currentTextChanged.connect(self.changeData)
         self.changeData()
+        self.agregate_name_edit.setFocus()
 
     def changeData(self):
         self.system_cb.model.updateData(
             (PlaneSystem.select().where(PlaneSystem.specId == self.spec_cb.currentData(Qt.ItemDataRole.UserRole),
-                PlaneSystem.typeId == self.plane_type_cb.currentData(Qt.ItemDataRole.UserRole))))
+                                        PlaneSystem.typeId == self.plane_type_cb.currentData(
+                                            Qt.ItemDataRole.UserRole))))
 
     def add(self):
         self.agregate_name = AgregateName()

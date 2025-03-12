@@ -31,6 +31,7 @@ class ListAll(QDialog):
 
     def add(self):
         add_window = self.edit_obj()
+        add_window.update_signal.connect(self.update_table)
         add_window.exec()
 
     @pyqtSlot()
@@ -46,9 +47,7 @@ class UnitList(ListAll):
         self.table = AllTableView(["", "Подразделения"], Unit)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-
         self.edit_obj = AddUnit
-
 
 
 class PlaneTypeList(ListAll):
@@ -106,7 +105,6 @@ class SpecList(ListAll):
         self.edit_obj = AddSpec
 
 
-
 class RemTypeList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -121,6 +119,7 @@ class PlaneList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("Список самолетов")
+        self.resize(1100, 600)
         self.table = PlaneTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)

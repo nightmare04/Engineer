@@ -295,7 +295,7 @@ class PlaneTableView(QTableView):
         self.setModel(self.proxy_model)
         self.hideColumn(0)
         # self.setColumnWidth(5, 200)
-        self.verticalHeader().setDefaultSectionSize(90)
+        self.verticalHeader().setDefaultSectionSize(60)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.ResizeToContents)
         self.horizontalHeader().setSectionResizeMode(9, QHeaderView.ResizeMode.Stretch)
 
@@ -319,10 +319,10 @@ class IspravnostPlaneTableModel(QAbstractTableModel):
     def __init__(self, plane: Plane, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.plane = plane
-        self._dataset = AgregateOnPlane.select().where(AgregateOnPlane.planeId == self.plane.id)
+        self._dataset = AgregateList.select().where(AgregateList.planeId == self.plane.id)
 
     def rowCount(self, parent=...):
-        return len(AgregateOnPlane.select().where(AgregateOnPlane.planeId == self.plane.id))
+        return len(AgregateList.select().where(AgregateList.planeId == self.plane.id))
 
     def columnCount(self, parent=...):
         return 6
@@ -362,7 +362,7 @@ class IspravnostPlaneTableModel(QAbstractTableModel):
 
     def updateData(self):
         self.beginResetModel()
-        self._dataset = AgregateOnPlane.select().where(AgregateOnPlane.planeId == self.plane.id)
+        self._dataset = AgregateList.select().where(AgregateList.planeId == self.plane.id)
         self.endResetModel()
 
 

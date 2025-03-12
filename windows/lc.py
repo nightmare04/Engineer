@@ -112,10 +112,38 @@ class ListControlWindow(QDialog):
         self.planeTypeGroupbox.setTitle("Типы самолетов")
         self.planeTypeGroupbox.setLayout(QHBoxLayout())
 
+        self.setAcceptDrops(True)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasText():
+            event.accept()
+        else:
+            event.ignore()
+
+    def dropEvent(self, event):
+        button = event.source()
+        if event.mimeData().hasText():
+            target_group = self.childAt(event.position().toPoint())
+            if isinstance(target_group, PlaneGroupBox):
+                button.setParent(None)
+                layout = target_group.layout()
+                layout.addWidget(button)
+                event.setDropAction(Qt.DropAction.MoveAction)
+                event.accept()
+            else:
+                event.ignore()
+
     def type_select(self, type_btn: TypeBtn):
         planes_btns = self.findChildren(PlaneBtn)
+        type_btns = self.findChildren(TypeBtn)
+        types_mask = {}
+        for btn in type_btns:
+            if btn.isChecked():
+                types_mask[btn.type_plane.id] = True
+            else:
+                types_mask[btn.type_plane.id] = False
         for btn in planes_btns:
-            if type_btn.isChecked() and btn.plane.typeId.id == type_btn.type_plane.id:
+            if types_mask[btn.plane.typeId.id]:
                 btn.setChecked(True)
             else:
                 btn.setChecked(False)

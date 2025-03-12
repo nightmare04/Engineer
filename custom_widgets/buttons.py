@@ -21,17 +21,17 @@ class PlaneBtn(QPushButton):
             self.check_exec(lc)
         self.setStyleSheet("PlaneBtn{background-color: red;}"
                            "PlaneBtn:checked{background-color: green;}")
+        self.setAcceptDrops(True)
 
     def mouseMoveEvent(self, e):
         if e.buttons() == Qt.MouseButton.LeftButton:
             drag = QDrag(self)
             mime = QMimeData()
+            mime.setText(self.text())
             drag.setMimeData(mime)
-
             pixmap = QPixmap(self.size())
             self.render(pixmap)
             drag.setPixmap(pixmap)
-
             drag.exec(Qt.DropAction.MoveAction)
 
     def check_ispr(self):

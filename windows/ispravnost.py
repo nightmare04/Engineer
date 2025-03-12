@@ -3,7 +3,7 @@ from functools import partial
 from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QDialog, QPushButton
 
 from custom_widgets.buttons import PlaneBtn
-from custom_widgets.groupboxs import UnitPlaneGroupBox
+from custom_widgets.groupboxs import PlaneGroupBox, UnitPlaneGroupBox
 from custom_widgets.tables import IspravnostPlaneTableView
 from database.models import *
 

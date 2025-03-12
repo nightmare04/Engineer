@@ -142,7 +142,7 @@ class AgregateName(BaseModel):
         db_table = 'agregate_name_list'
 
 
-class AgregateList(BaseModel):
+class AgregateOnPlane(BaseModel):
     agregateId = ForeignKeyField(AgregateName)
     zavNum = CharField(max_length=100, null=True)
     dateVyp = DateField(null=True)
@@ -158,6 +158,6 @@ def create_tables():
         db.create_tables(
             [
                 ListControl, ListControlExec, PlaneType, Unit, Spec, Plane, PlaneSystem, AgregateName,
-                OsobPlane, AgregateState, RemZav, RemType, ZavIzg, AgregateList
+                OsobPlane, AgregateState, RemZav, RemType, ZavIzg, AgregateOnPlane
             ]
         )

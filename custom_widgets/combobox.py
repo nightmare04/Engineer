@@ -98,3 +98,11 @@ class ZavodIzgComboBox(MyComboBox):
 class SystemComboBox(MyComboBox):
     def __init__(self, query, parent=None):
         super().__init__(query, parent)
+
+class AgregateComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)
+
+class StateComboBox(MyComboBox):
+    def __init__(self, query, parent=None):
+        super().__init__(query, parent)

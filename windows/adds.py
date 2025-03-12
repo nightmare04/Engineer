@@ -655,3 +655,72 @@ class AddAgregateName(Adds):
         self.agregate_name.save()
         self.update_signal.emit()
         self.accept()
+
+
+class AddAgregate(Adds):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.agregate = AgregateOnPlane()
+        self.setWindowTitle("Добавить блок/агрегат")
+        self.spec_cb = SpecComboBox(Spec.select().where(Spec.not_delete == True))
+        self.system_cb = SystemComboBox(PlaneSystem.select().where(PlaneSystem.not_delete == True))
+        self.agregate_cb = AgregateComboBox(AgregateOnPlane.select().where(AgregateOnPlane.agregateId.systemId == self.system_cb.currentData(Qt.ItemDataRole.UserRole)))
+        self.agregate_zavnum = QLineEdit()
+        self.agregate_date = QDateEdit()
+        self.agregate_state = StateComboBox(AgregateState.select().where(AgregateState.not_delete == True))
+
+        self.form.addRow("Специальность", self.spec_cb)
+        self.form.addRow("Система", self.system_cb)
+        self.form.addRow("Наименование", self.agregate)
+        self.form.addRow("Заводской номер", self.agregate_zavnum)
+        self.form.addRow("Дата выпуска", self.agregate_date)
+        self.form.addRow("Состояние", self.agregate_state)
+        self.agregate.setFocus()
+        self.system_cb.currentTextChanged.connect(self.changeData)
+        self.changeData()
+        self.agregate_name_edit.setFocus()
+
+    def changeData(self):
+        self.agregate.model.updateData(AgregateOnPlane.select().
+                                       where(AgregateOnPlane.agregateId.systemId ==
+                                             self.system_cb.currentData(Qt.ItemDataRole.UserRole)))
+
+    def add(self):
+        self.agregate = AgregateOnPlane()
+        self.agregate.agregateId = self.agregate_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate.zavNum = self.agregate_zavnum.text()
+        self.agregate.state = self.agregate_state.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate.save()
+        self.update_signal.emit()
+        self.accept()
+
+    @pyqtSlot(str)
+    def edit(self, agregate_id):
+        self.agregate = AgregateOnPlane.get_by_id(agregate_id)
+        self.setWindowTitle("Изменить")
+        self.btn_ok.setText("Сохранить")
+        self.btn_ok.clicked.disconnect()
+        self.btn_ok.clicked.connect(self.save)
+        self.btn_del = QPushButton("Удалить")
+        self.btnlayout.addWidget(self.btn_del)
+        self.btn_del.clicked.connect(self.delete)
+        self.spec_cb.setCurrentIndex(self.spec_cb.findText(self.agregate.agregateId.specId))
+        self.system_cb.setCurrentIndex(self.system_cb_cb.findText(self.agregate.agregateId.systemId))
+        self.agregate_zavnum.setText(self.agregate.zavNum)
+        self.agregate_date.setDate(self.agregate.dateVyp)
+        self.agregate_state.setCurrentIndex(self.agregate_state.findData(self.agregate.state, Qt.ItemDataRole.UserRole))
+
+    def save(self):
+        self.agregate.name = self.agregate_name_edit.text()
+        self.agregate.typeId = self.plane_type_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate.specId = self.spec_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate.systemId = self.system_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate.count_on_plane = self.count_on_plane.text()
+        self.agregate.save()
+        self.update_signal.emit()
+        self.accept()
+
+    def delete(self):
+        self.agregate.delete_instance()
+        self.update_signal.emit()
+        self.accept()

@@ -22,12 +22,16 @@ class ListAll(QDialog):
         self.btnLayout.addWidget(self.btnAdd)
 
     def edit(self, item):
+        edit_window = self.edit_obj()
+        edit_window.update_signal.connect(self.update_table)
+        self.send.connect(edit_window.edit)
         edit_item_id = item.siblingAtColumn(0).data()
         self.send.emit(str(edit_item_id))
-        self.edit_window.exec()
+        edit_window.exec()
 
     def add(self):
-        self.edit_window.exec()
+        add_window = self.edit_obj()
+        add_window.exec()
 
     @pyqtSlot()
     def update_table(self):
@@ -43,9 +47,8 @@ class UnitList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-        self.edit_window = AddUnit()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddUnit
+
 
 
 class PlaneTypeList(ListAll):
@@ -57,9 +60,7 @@ class PlaneTypeList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-        self.edit_window = AddPlaneType()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddPlaneType
 
 
 class OsobList(ListAll):
@@ -71,9 +72,7 @@ class OsobList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-        self.edit_window = AddOsob()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddOsob
 
 
 class ZavodIzgList(ListAll):
@@ -83,10 +82,7 @@ class ZavodIzgList(ListAll):
         self.table = AllTableView(["", "Завод"], ZavIzg)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-
-        self.edit_window = AddZavodIzg()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddZavodIzg
 
 
 class ZavodRemList(ListAll):
@@ -97,9 +93,7 @@ class ZavodRemList(ListAll):
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-        self.edit_window = AddZavodRem()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddZavodRem
 
 
 class SpecList(ListAll):
@@ -109,10 +103,8 @@ class SpecList(ListAll):
         self.table = AllTableView(["", "Специальность"], Spec)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
+        self.edit_obj = AddSpec
 
-        self.edit_window = AddSpec()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
 
 
 class RemTypeList(ListAll):
@@ -122,10 +114,7 @@ class RemTypeList(ListAll):
         self.table = RemTypeTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-
-        self.edit_window = AddTypeRem()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddTypeRem
 
 
 class PlaneList(ListAll):
@@ -135,10 +124,7 @@ class PlaneList(ListAll):
         self.table = PlaneTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-
-        self.edit_window = AddPlane()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddPlane
 
 
 class PlaneSystemList(ListAll):
@@ -148,10 +134,7 @@ class PlaneSystemList(ListAll):
         self.table = PlaneSystemTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-
-        self.edit_window = AddSystem()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddSystem
 
         self.filter_layout = QFormLayout()
         self.mainLayout.insertLayout(1, self.filter_layout)
@@ -171,10 +154,7 @@ class AgregateStateList(ListAll):
         self.table = AgregateStateTableView()
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-
-        self.edit_window = AddAgregateState()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddAgregateState
 
 
 class AgregateNameList(ListAll):
@@ -191,13 +171,21 @@ class AgregateNameList(ListAll):
         self.system_cb = SystemComboBox(PlaneSystem.select().where(PlaneSystem.not_delete == True))
         self.filterLayout.addRow("Выбери тип", self.plane_type_cb)
         self.filterLayout.addRow("Выбери специальность", self.spec_cb)
-        self.filterLayout.addRow("Выбери Систему", self.system_cb)
+        self.filterLayout.addRow("Выбери систему", self.system_cb)
         self.mainLayout.insertLayout(1, self.filterLayout)
+
+        self.plane_type_cb.currentTextChanged.connect(self.changeData)
+        self.spec_cb.currentTextChanged.connect(self.changeData)
 
         self.plane_type_cb.currentTextChanged.connect(self.table.proxy_model.setTypeFilter)
         self.spec_cb.currentTextChanged.connect(self.table.proxy_model.setSpecFilter)
         self.system_cb.currentTextChanged.connect(self.table.proxy_model.setSystemFilter)
 
-        self.edit_window = AddAgregateName()
-        self.edit_window.update_signal.connect(self.update_table)
-        self.send.connect(self.edit_window.edit)
+        self.edit_obj = AddAgregateName
+        self.changeData()
+
+    def changeData(self):
+        self.system_cb.model.updateData(
+            (PlaneSystem.select().where(PlaneSystem.specId == self.spec_cb.currentData(Qt.ItemDataRole.UserRole),
+                                        PlaneSystem.typeId == self.plane_type_cb.currentData(
+                                            Qt.ItemDataRole.UserRole))))

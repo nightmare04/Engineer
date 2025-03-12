@@ -20,11 +20,14 @@ class MyComboModel(QAbstractListModel):
         if not index.isValid():
             return
 
+        if len(self._query) == 0:
+            return
+
         if role == Qt.ItemDataRole.DisplayRole:
-            return self._query[index.row() - 1].name
+            return self._query[index.row()].name
 
         if role == Qt.ItemDataRole.UserRole:
-            return self._query[index.row() - 1].id
+            return self._query[index.row()].id
 
 
 class PlaneFilterComboModel(MyComboModel):

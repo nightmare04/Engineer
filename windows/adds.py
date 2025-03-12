@@ -575,6 +575,14 @@ class AddAgregateName(Adds):
         self.form.addRow("Наименование", self.agregate_name_edit)
         self.form.addRow("Количество на самолете", self.count_on_plane)
         self.agregate_name_edit.setFocus()
+        self.plane_type_cb.currentTextChanged.connect(self.changeData)
+        self.spec_cb.currentTextChanged.connect(self.changeData)
+        self.changeData()
+
+    def changeData(self):
+        self.system_cb.model.updateData(
+            (PlaneSystem.select().where(PlaneSystem.specId == self.spec_cb.currentData(Qt.ItemDataRole.UserRole),
+                PlaneSystem.typeId == self.plane_type_cb.currentData(Qt.ItemDataRole.UserRole))))
 
     def add(self):
         self.agregate_name = AgregateName()
@@ -602,8 +610,8 @@ class AddAgregateName(Adds):
     def load(self):
         self.agregate_name_edit.setText(self.agregate_name.name)
         self.plane_type_cb.setCurrentIndex(self.plane_type_cb.findText(self.agregate_name.typeId.name))
-        self.spec_cb.setCurrentIndex(self.plane_type_cb.findText(self.agregate_name.specId.name))
-        self.system_cb.setCurrentIndex(self.plane_type_cb.findText(self.agregate_name.systemId.name))
+        self.spec_cb.setCurrentIndex(self.spec_cb.findText(self.agregate_name.specId.name))
+        self.system_cb.setCurrentIndex(self.system_cb.findText(self.agregate_name.systemId.name))
         self.count_on_plane.setValue(self.agregate_name.count_on_plane)
 
     def save(self):

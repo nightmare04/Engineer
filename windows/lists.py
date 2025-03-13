@@ -24,15 +24,14 @@ class ListAll(QDialog):
     def edit(self, item):
         edit_window = self.edit_obj()
         edit_window.update_signal.connect(self.update_table)
-        self.send.connect(edit_window.edit)
+        self.send.connect(edit_window.open_edit)
         edit_item_id = item.siblingAtColumn(0).data()
         self.send.emit(str(edit_item_id))
-        edit_window.exec()
 
     def add(self):
         add_window = self.edit_obj()
         add_window.update_signal.connect(self.update_table)
-        add_window.exec()
+        add_window.open_add()
 
     @pyqtSlot()
     def update_table(self):
@@ -40,26 +39,27 @@ class ListAll(QDialog):
 
 
 class UnitList(ListAll):
+
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.edit_obj = AddUnit
         self.setWindowTitle("Список подразделений")
 
         self.table = AllTableView(["", "Подразделения"], Unit)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
-        self.edit_obj = AddUnit
 
 
 class PlaneTypeList(ListAll):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.edit_obj = AddPlaneType
         self.setWindowTitle("Список типов самолетов")
 
         self.table = AllTableView(["", "Тип"], PlaneType)
         self.mainLayout.insertWidget(0, self.table)
         self.table.doubleClicked.connect(self.edit)
 
-        self.edit_obj = AddPlaneType
 
 
 class OsobList(ListAll):

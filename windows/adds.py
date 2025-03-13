@@ -27,7 +27,7 @@ class Adds(QDialog):
         self.mainlayout.addLayout(self.form)
         self.mainlayout.addLayout(self.btnlayout)
 
-        self.btn_ok.clicked.connect(self.add)
+        self.btn_ok.clicked.connect(self.save)
         self.btn_cancel.clicked.connect(self.reject)
 
 
@@ -40,12 +40,10 @@ class AddUnit(Adds):
         self.form.addRow("Подразделение", self.unit_name)
         self.unit_name.setFocus()
 
-    def add(self):
-        unit = Unit()
-        unit.name = self.unit_name.text()
-        unit.save()
-        self.update_signal.emit()
-        self.clear()
+    @pyqtSlot()
+    def open_add(self):
+        self.unit = Unit()
+        self.exec()
 
     def save(self):
         self.unit.name = self.unit_name.text()
@@ -54,9 +52,9 @@ class AddUnit(Adds):
         self.accept()
 
     @pyqtSlot(str)
-    def edit(self, unit_id):
+    def open_edit(self, unit_id):
         self.unit = Unit.get_by_id(unit_id)
-        self.load()
+        self.unit_name.setText(self.unit.name)
         self.setWindowTitle("Изменить подразделение")
         self.btn_del = QPushButton("Удалить")
         self.btn_del.clicked.connect(self.delete)
@@ -64,12 +62,10 @@ class AddUnit(Adds):
         self.btn_ok.setText("Сохранить")
         self.btn_ok.clicked.disconnect()
         self.btn_ok.clicked.connect(self.save)
+        self.exec()
 
     def clear(self):
         self.unit_name.setText("")
-
-    def load(self):
-        self.unit_name.setText(self.unit.name)
 
     def delete(self):
         self.unit.not_delete = False
@@ -87,17 +83,15 @@ class AddPlaneType(Adds):
         self.form.addRow("Тип", self.type_name)
         self.type_name.setFocus()
 
-    def add(self):
-        plane_type = PlaneType()
-        plane_type.name = self.type_name.text()
-        plane_type.save()
-        self.update_signal.emit()
-        self.clear()
+    @pyqtSlot()
+    def open_add(self):
+        self.plane_type = PlaneType()
+        self.exec()
 
     @pyqtSlot(str)
-    def edit(self, plane_type_id):
+    def open_edit(self, plane_type_id):
         self.plane_type = PlaneType.get_by_id(plane_type_id)
-        self.load()
+        self.type_name.setText(self.plane_type.name)
         self.setWindowTitle("Изменить тип самолета")
         self.btn_del = QPushButton("Удалить")
         self.btn_del.clicked.connect(self.delete)
@@ -105,18 +99,13 @@ class AddPlaneType(Adds):
         self.btn_ok.setText("Сохранить")
         self.btn_ok.clicked.disconnect()
         self.btn_ok.clicked.connect(self.save)
+        self.exec()
 
     def save(self):
         self.plane_type.name = self.type_name.text()
         self.plane_type.save()
         self.update_signal.emit()
         self.accept()
-
-    def clear(self):
-        self.type_name.setText("")
-
-    def load(self):
-        self.type_name.setText(self.plane_type.name)
 
     def delete(self):
         self.plane_type.not_delete = False
@@ -140,8 +129,8 @@ class AddPlane(Adds):
         self.remZav = RemZavComboBox(RemZav.select().where(RemZav.not_delete == True))
         self.remType = RemTypeComboBox(RemType.select().where(RemType.not_delete == True))
         self.osobPlane = OsobGroupBox()
-        self.planeType_combobox.currentIndexChanged.connect(self.fillOsob)
-        self.fillOsob()
+        self.planeType_combobox.currentIndexChanged.connect(self.osob_fill)
+        self.osob_fill()
 
         self.form.addRow("Тип самолета", self.planeType_combobox)
         self.form.addRow("Подразделение", self.unit_combobox)
@@ -156,22 +145,12 @@ class AddPlane(Adds):
 
         self.bortNum.setFocus()
 
-    def fillOsob(self):
-        btns = self.osobPlane.findChildren(OsobBtn)
-        for btn in btns:
-            btn.setParent(None)
-        i = 0
-        j = 0
-        for osob in OsobPlane.select().where(OsobPlane.not_delete == True, OsobPlane.typeId == self.planeType_combobox.currentData(Qt.ItemDataRole.UserRole)):
-            i += 1
-            btn_osob = OsobBtn(osob)
-            self.osobPlane.mainlayout.addWidget(btn_osob, j, i)
-            if i > 2:
-                j += 1
-                i = 0
+    def open_add(self):
+        self.plane = Plane()
+        self.exec()
 
     @pyqtSlot(str)
-    def edit(self, plane_id):
+    def open_edit(self, plane_id):
         self.plane = Plane.get_by_id(plane_id)
         self.load()
         self.setWindowTitle("Изменить самолет")
@@ -181,35 +160,7 @@ class AddPlane(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
-
-    def add(self):
-        plane = Plane()
-        plane.typeId = self.planeType_combobox.currentData()
-        plane.unit = self.unit_combobox.currentData()
-        plane.name = self.bortNum.text()
-        plane.zavNum = self.zavNum.text()
-        plane.dateVyp = self.dateVyp.date().toPyDate()
-        plane.vypZav = self.vypZav.currentData()
-        plane.dateRem = self.dateRem.date().toPyDate()
-        plane.remZav = self.remZav.currentData()
-        plane.remType = self.remType.currentData()
-        plane.osobPlane = self.osob_dump()
-        plane.save()
-        self.update_signal.emit()
-        self.clean()
-
-    def osob_dump(self):
-        res = []
-        for osob_btn in self.findChildren(OsobBtn):
-            if osob_btn.isChecked():
-                res.append(osob_btn.osob_plane.id)
-        return res
-
-    def clean(self):
-        self.bortNum.setText("")
-        self.zavNum.setText("")
-        self.dateVyp.clear()
-        self.dateRem.clear()
+        self.exec()
 
     def load(self):
         self.bortNum.setText(self.plane.name)
@@ -231,7 +182,7 @@ class AddPlane(Adds):
         self.btn_ok.clicked.disconnect()
         self.btn_ok.clicked.connect(self.update_plane)
 
-    def update_plane(self):
+    def save(self):
         self.plane.typeId = self.planeType_combobox.currentData()
         self.plane.unit = self.unit_combobox.currentData(role=Qt.ItemDataRole.UserRole)
         self.plane.name = self.bortNum.text()
@@ -252,6 +203,27 @@ class AddPlane(Adds):
         self.update_signal.emit()
         self.accept()
 
+    def osob_fill(self):
+        btns = self.osobPlane.findChildren(OsobBtn)
+        for btn in btns:
+            btn.setParent(None)
+        i = 0
+        j = 0
+        for osob in OsobPlane.select().where(OsobPlane.not_delete == True, OsobPlane.typeId == self.planeType_combobox.currentData(Qt.ItemDataRole.UserRole)):
+            i += 1
+            btn_osob = OsobBtn(osob)
+            self.osobPlane.mainlayout.addWidget(btn_osob, j, i)
+            if i > 2:
+                j += 1
+                i = 0
+
+    def osob_dump(self):
+        res = []
+        for osob_btn in self.findChildren(OsobBtn):
+            if osob_btn.isChecked():
+                res.append(osob_btn.osob_plane.id)
+        return res
+
 
 class AddOsob(Adds):
     def __init__(self, parent=None):
@@ -264,16 +236,13 @@ class AddOsob(Adds):
         self.form.addRow("&Наименование", self.osob_edit)
         self.osob_edit.setFocus()
 
-    def add(self):
-        osob = OsobPlane()
-        osob.name = self.osob_edit.text()
-        osob.typeId = self.plane_type.currentData(Qt.ItemDataRole.UserRole)
-        osob.save()
-        self.update_signal.emit()
-        self.accept()
+    @pyqtSlot()
+    def open_add(self):
+        self.osob = OsobPlane()
+        self.exec()
 
     @pyqtSlot(str)
-    def edit(self, osob_id):
+    def open_edit(self, osob_id):
         self.osob = OsobPlane.get_by_id(osob_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -283,6 +252,7 @@ class AddOsob(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.osob_edit.setText(self.osob.name)
@@ -315,17 +285,13 @@ class AddSystem(Adds):
         self.form.addRow("Название системы", self.system_edit)
         self.system_edit.setFocus()
 
-    def add(self):
-        system = PlaneSystem()
-        system.name = self.system_edit.text()
-        system.typeId = self.plane_type.currentData(role=Qt.ItemDataRole.UserRole)
-        system.specId = self.spec.currentData(role=Qt.ItemDataRole.UserRole)
-        system.save()
-        self.update_signal.emit()
-        self.accept()
+    @pyqtSlot()
+    def open_add(self):
+        self.system = PlaneSystem()
+        self.exec()
 
     @pyqtSlot(str)
-    def edit(self, system):
+    def open_edit(self, system):
         self.system = PlaneSystem.get_by_id(system)
         self.load()
         self.setWindowTitle("Изменить")
@@ -336,6 +302,7 @@ class AddSystem(Adds):
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
         self.system_edit.setFocus()
+        self.exec()
 
     def load(self):
         self.system_edit.setText(self.system.name)
@@ -366,15 +333,13 @@ class AddZavodIzg(Adds):
         self.form.addRow("Завод изготовитель", self.zavod_izg_edit)
         self.zavod_izg_edit.setFocus()
 
-    def add(self):
-        zavod_izg = ZavIzg()
-        zavod_izg.name = self.zavod_izg_edit.text()
-        zavod_izg.save()
-        self.update_signal.emit()
-        self.accept()
+    @pyqtSlot()
+    def open_add(self):
+        self.zavod_izg = ZavIzg()
+        self.exec()
 
     @pyqtSlot(str)
-    def edit(self, zavod_izg_id):
+    def open_edit(self, zavod_izg_id):
         self.zavod_izg = ZavIzg.get_by_id(zavod_izg_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -384,6 +349,7 @@ class AddZavodIzg(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.zavod_izg_edit.setText(self.zavod_izg.name)
@@ -418,7 +384,7 @@ class AddZavodRem(Adds):
         self.accept()
 
     @pyqtSlot(str)
-    def edit(self, zavod_rem_id):
+    def open_edit(self, zavod_rem_id):
         self.zavod_rem = RemZav.get_by_id(zavod_rem_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -428,6 +394,7 @@ class AddZavodRem(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.zavod_rem_edit.setText(self.zavod_rem.name)
@@ -462,7 +429,7 @@ class AddSpec(Adds):
         self.accept()
 
     @pyqtSlot(str)
-    def edit(self, spec_id):
+    def open_edit(self, spec_id):
         self.spec = Spec.get_by_id(spec_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -472,6 +439,7 @@ class AddSpec(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.spec_edit.setText(self.spec.name)
@@ -509,7 +477,7 @@ class AddTypeRem(Adds):
         self.accept()
 
     @pyqtSlot(str)
-    def edit(self, type_rem_id):
+    def open_edit(self, type_rem_id):
         self.type_rem = RemType.get_by_id(type_rem_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -519,6 +487,7 @@ class AddTypeRem(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.type_rem_edit.setText(self.type_rem.name)
@@ -555,7 +524,7 @@ class AddAgregateState(Adds):
         self.accept()
 
     @pyqtSlot(str)
-    def edit(self, type_rem_id):
+    def open_edit(self, type_rem_id):
         self.agregate_state = AgregateState.get_by_id(type_rem_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -565,6 +534,7 @@ class AddAgregateState(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.agregate_state_edit.setText(self.agregate_state.name)
@@ -622,7 +592,7 @@ class AddAgregateName(Adds):
         self.accept()
 
     @pyqtSlot(str)
-    def edit(self, type_rem_id):
+    def open_edit(self, type_rem_id):
         self.agregate_name = AgregateName.get_by_id(type_rem_id)
         self.load()
         self.setWindowTitle("Изменить")
@@ -632,6 +602,7 @@ class AddAgregateName(Adds):
         self.btn_del = QPushButton("Удалить")
         self.btnlayout.addWidget(self.btn_del)
         self.btn_del.clicked.connect(self.delete)
+        self.exec()
 
     def load(self):
         self.agregate_name_edit.setText(self.agregate_name.name)
@@ -660,42 +631,34 @@ class AddAgregateName(Adds):
 class AddAgregate(Adds):
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.plane_type = Plane()
         self.agregate = AgregateOnPlane()
-        self.setWindowTitle("Добавить блок/агрегат")
         self.spec_cb = SpecComboBox(Spec.select().where(Spec.not_delete == True))
         self.system_cb = SystemComboBox(PlaneSystem.select().where(PlaneSystem.not_delete == True))
         self.agregate_cb = AgregateComboBox(AgregateOnPlane.select().where(AgregateOnPlane.agregateId.systemId == self.system_cb.currentData(Qt.ItemDataRole.UserRole)))
         self.agregate_zavnum = QLineEdit()
         self.agregate_date = QDateEdit()
         self.agregate_state = StateComboBox(AgregateState.select().where(AgregateState.not_delete == True))
+        self.setup_ui()
 
+    def setup_ui(self):
+        self.setWindowTitle("Добавить блок/агрегат")
         self.form.addRow("Специальность", self.spec_cb)
         self.form.addRow("Система", self.system_cb)
         self.form.addRow("Наименование", self.agregate)
         self.form.addRow("Заводской номер", self.agregate_zavnum)
         self.form.addRow("Дата выпуска", self.agregate_date)
         self.form.addRow("Состояние", self.agregate_state)
-        self.agregate.setFocus()
         self.system_cb.currentTextChanged.connect(self.changeData)
+
+    @pyqtSlot(Plane)
+    def open_add(self, plane):
+        self.plane = plane
         self.changeData()
-        self.agregate_name_edit.setFocus()
-
-    def changeData(self):
-        self.agregate.model.updateData(AgregateOnPlane.select().
-                                       where(AgregateOnPlane.agregateId.systemId ==
-                                             self.system_cb.currentData(Qt.ItemDataRole.UserRole)))
-
-    def add(self):
-        self.agregate = AgregateOnPlane()
-        self.agregate.agregateId = self.agregate_cb.currentData(Qt.ItemDataRole.UserRole)
-        self.agregate.zavNum = self.agregate_zavnum.text()
-        self.agregate.state = self.agregate_state.currentData(Qt.ItemDataRole.UserRole)
-        self.agregate.save()
-        self.update_signal.emit()
-        self.accept()
+        self.exec()
 
     @pyqtSlot(str)
-    def edit(self, agregate_id):
+    def open_edit(self, agregate_id):
         self.agregate = AgregateOnPlane.get_by_id(agregate_id)
         self.setWindowTitle("Изменить")
         self.btn_ok.setText("Сохранить")
@@ -709,13 +672,17 @@ class AddAgregate(Adds):
         self.agregate_zavnum.setText(self.agregate.zavNum)
         self.agregate_date.setDate(self.agregate.dateVyp)
         self.agregate_state.setCurrentIndex(self.agregate_state.findData(self.agregate.state, Qt.ItemDataRole.UserRole))
+        self.exec()
+
+    def changeData(self):
+        self.agregate.model.updateData(AgregateOnPlane.select().
+                                       where(AgregateOnPlane.agregateId.systemId ==
+                                             self.system_cb.currentData(Qt.ItemDataRole.UserRole)))
 
     def save(self):
-        self.agregate.name = self.agregate_name_edit.text()
-        self.agregate.typeId = self.plane_type_cb.currentData(Qt.ItemDataRole.UserRole)
-        self.agregate.specId = self.spec_cb.currentData(Qt.ItemDataRole.UserRole)
-        self.agregate.systemId = self.system_cb.currentData(Qt.ItemDataRole.UserRole)
-        self.agregate.count_on_plane = self.count_on_plane.text()
+        self.agregate.agregateId = self.agregate_cb.currentData(Qt.ItemDataRole.UserRole)
+        self.agregate.zavNum = self.agregate_zavnum.text()
+        self.agregate.state = self.agregate_state.currentData(Qt.ItemDataRole.UserRole)
         self.agregate.save()
         self.update_signal.emit()
         self.accept()

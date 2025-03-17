@@ -1,4 +1,5 @@
 from PyQt6.QtCore import pyqtSignal
+from PyQt6.QtWidgets import QWidget
 
 from custom_widgets.tables import *
 from windows.adds import *
@@ -15,7 +16,7 @@ class ListAll(QDialog):
         self.btnLayout = QHBoxLayout()
         self.mainLayout.addLayout(self.btnLayout)
         self.btnOk = QPushButton("Ок")
-        self.btnOk.clicked.connect(self.accept)
+        self.btnOk.clicked.connect(self.close)
         self.btnAdd = QPushButton("Добавить")
         self.btnAdd.clicked.connect(self.add)
         self.btnLayout.addWidget(self.btnOk)
@@ -29,9 +30,9 @@ class ListAll(QDialog):
         self.send.emit(str(edit_item_id))
 
     def add(self):
-        add_window = self.edit_obj()
-        add_window.update_signal.connect(self.update_table)
-        add_window.open_add()
+        edit_window = self.edit_obj()
+        edit_window.update_signal.connect(self.update_table)
+        edit_window.open_add()
 
     @pyqtSlot()
     def update_table(self):

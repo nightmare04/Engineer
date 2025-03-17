@@ -109,9 +109,9 @@ class MainWindow(QMainWindow):
     def open_agregate_state():
         AgregateStateList().exec()
 
-    @staticmethod
-    def open_units():
-        UnitList().exec()
+    def open_units(self):
+        window = UnitList(self)
+        window.exec()
 
     @staticmethod
     def open_planeType():

@@ -34,7 +34,7 @@ class Adds(QDialog):
 class AddUnit(Adds):
     def __init__(self, parent=None):
         super().__init__(parent)
-        self.unit = None
+        self.obj = Unit()
         self.setWindowTitle("Добавить подразделение")
         self.unit_name = QLineEdit()
         self.form.addRow("Подразделение", self.unit_name)
@@ -42,34 +42,32 @@ class AddUnit(Adds):
 
     @pyqtSlot()
     def open_add(self):
-        self.unit = Unit()
+        self.obj = Unit(self)
         self.exec()
 
     def save(self):
-        self.unit.name = self.unit_name.text()
-        self.unit.save()
+        self.obj.name = self.unit_name.text()
+        self.obj.save()
         self.update_signal.emit()
         self.accept()
 
     @pyqtSlot(str)
     def open_edit(self, unit_id):
-        self.unit = Unit.get_by_id(unit_id)
-        self.unit_name.setText(self.unit.name)
+        self.obj = Unit.get_by_id(unit_id)
+        self.unit_name.setText(self.obj.name)
         self.setWindowTitle("Изменить подразделение")
         self.btn_del = QPushButton("Удалить")
         self.btn_del.clicked.connect(self.delete)
         self.btnlayout.addWidget(self.btn_del)
         self.btn_ok.setText("Сохранить")
-        self.btn_ok.clicked.disconnect()
-        self.btn_ok.clicked.connect(self.save)
         self.exec()
 
     def clear(self):
         self.unit_name.setText("")
 
     def delete(self):
-        self.unit.not_delete = False
-        self.unit.save()
+        self.obj.not_delete = False
+        self.obj.save()
         self.update_signal.emit()
         self.accept()
 
@@ -166,7 +164,7 @@ class AddPlane(Adds):
         self.bortNum.setText(self.plane.name)
         self.zavNum.setText(self.plane.zavNum)
         self.planeType_combobox.setCurrentIndex(self.planeType_combobox.findData(str(self.plane.typeId)))
-        self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(self.plane.unit)))
+        self.unit_combobox.setCurrentIndex(self.unit_combobox.findData(str(self.plane.obj)))
         self.bortNum.setText(self.plane.name)
         self.zavNum.setText(self.plane.zavNum)
         self.dateVyp.setDate(self.plane.dateVyp)
@@ -184,7 +182,7 @@ class AddPlane(Adds):
 
     def save(self):
         self.plane.typeId = self.planeType_combobox.currentData()
-        self.plane.unit = self.unit_combobox.currentData(role=Qt.ItemDataRole.UserRole)
+        self.plane.obj = self.unit_combobox.currentData(role=Qt.ItemDataRole.UserRole)
         self.plane.name = self.bortNum.text()
         self.plane.zavNum = self.zavNum.text()
         self.plane.dateVyp = self.dateVyp.date().toPyDate()
